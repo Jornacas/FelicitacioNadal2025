@@ -15,7 +15,7 @@ const CHARACTER_DATA: { [key: string]: { objects: ObjectType[], description: str
   },
   'Laura': {
     description: 'Coordinació Art',
-    objects: ['clay-red', 'clay-blue', 'clay-yellow', 'clay-green']
+    objects: ['clay-red', 'clay-blue', 'clay-yellow', 'clay-green', 'pencil', 'sharpener', 'eraser']
   },
   'Lidia': {
     description: 'Els Marrons',
@@ -27,7 +27,7 @@ const CHARACTER_DATA: { [key: string]: { objects: ObjectType[], description: str
   },
   'Jordi': {
     description: 'Gestió',
-    objects: ['pencil', 'sharpener', 'eraser', 'invoice']
+    objects: ['invoice', 'coin-gold', 'coin-silver', 'shopping-cart']
   }
 };
 
@@ -37,7 +37,8 @@ type ObjectType =
   | 'clay-red' | 'clay-blue' | 'clay-yellow' | 'clay-green'
   | 'rock-brown' | 'box-brown' | 'bag-brown' | 'weight-brown'
   | 'cv-paper' | 'cv-folder' | 'cv-stack' | 'contract'
-  | 'pencil' | 'sharpener' | 'eraser' | 'invoice';
+  | 'pencil' | 'sharpener' | 'eraser'
+  | 'invoice' | 'coin-gold' | 'coin-silver' | 'shopping-cart';
 
 interface Ball {
   id: number;
@@ -640,7 +641,7 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         ctx.stroke();
         break;
 
-      // JORDI - Office supplies
+      // LAURA - Art supplies (pencil, sharpener, eraser)
       case 'pencil':
         ctx.save();
         ctx.rotate(Math.PI / 4);
@@ -681,6 +682,8 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         ctx.font = `${radius * 0.3}px Arial`;
         ctx.fillText('MILAN', -radius * 0.3, radius * 0.1);
         break;
+
+      // JORDI - Gestió (factures, monedes, carros)
       case 'invoice':
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(-radius * 0.8, -radius, radius * 1.6, radius * 2);
@@ -688,10 +691,92 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         ctx.fillRect(-radius * 0.8, -radius, radius * 1.6, radius * 0.4);
         ctx.fillStyle = '#333';
         ctx.font = `${radius * 0.25}px Arial`;
-        ctx.fillText('FACTURA', -radius * 0.5, -radius * 0.7);
+        ctx.textAlign = 'center';
+        ctx.fillText('FACTURA', 0, -radius * 0.7);
         ctx.fillStyle = '#E74C3C';
         ctx.font = `bold ${radius * 0.4}px Arial`;
-        ctx.fillText('€€€', -radius * 0.4, radius * 0.3);
+        ctx.fillText('€€€', 0, radius * 0.3);
+        break;
+      case 'coin-gold':
+        // Moneda d'or
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#B8860B';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        // Cercle interior
+        ctx.strokeStyle = '#DAA520';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.65, 0, Math.PI * 2);
+        ctx.stroke();
+        // Símbol €
+        ctx.fillStyle = '#B8860B';
+        ctx.font = `bold ${radius * 0.8}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('€', 0, radius * 0.3);
+        break;
+      case 'coin-silver':
+        // Moneda de plata
+        ctx.fillStyle = '#C0C0C0';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#808080';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        // Cercle interior
+        ctx.strokeStyle = '#A9A9A9';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.65, 0, Math.PI * 2);
+        ctx.stroke();
+        // Símbol cèntims
+        ctx.fillStyle = '#666';
+        ctx.font = `bold ${radius * 0.6}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('c', 0, radius * 0.25);
+        break;
+      case 'shopping-cart':
+        // Carro de compra
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = '#3498DB';
+        // Cos del carro
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.7, -radius * 0.3);
+        ctx.lineTo(-radius * 0.5, radius * 0.4);
+        ctx.lineTo(radius * 0.5, radius * 0.4);
+        ctx.lineTo(radius * 0.7, -radius * 0.5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        // Reixeta del carro
+        ctx.strokeStyle = '#2980B9';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.5, 0);
+        ctx.lineTo(radius * 0.5, 0);
+        ctx.moveTo(-radius * 0.3, -radius * 0.3);
+        ctx.lineTo(-radius * 0.2, radius * 0.3);
+        ctx.moveTo(radius * 0.1, -radius * 0.4);
+        ctx.lineTo(radius * 0.2, radius * 0.3);
+        ctx.stroke();
+        // Mànec
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.7, -radius * 0.5);
+        ctx.lineTo(radius * 0.9, -radius * 0.8);
+        ctx.stroke();
+        // Rodes
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.arc(-radius * 0.4, radius * 0.6, radius * 0.15, 0, Math.PI * 2);
+        ctx.arc(radius * 0.4, radius * 0.6, radius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
         break;
     }
 
