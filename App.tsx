@@ -288,7 +288,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* CSS for marquee animation */}
+        {/* CSS for animations */}
         <style>{`
           @keyframes marquee {
             0% { transform: translateX(0); }
@@ -296,6 +296,20 @@ const App: React.FC = () => {
           }
           .animate-marquee {
             animation: marquee 45s linear infinite;
+          }
+          @keyframes snowfall {
+            0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(620px) rotate(360deg); opacity: 0.3; }
+          }
+          .animate-snowfall {
+            animation: snowfall linear infinite;
+          }
+          @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+          }
+          .animate-twinkle {
+            animation: twinkle 1.5s ease-in-out infinite;
           }
         `}</style>
 
@@ -445,7 +459,7 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* CSS for marquee animation */}
+        {/* CSS for animations */}
         <style>{`
           @keyframes marquee {
             0% { transform: translateX(0); }
@@ -453,6 +467,20 @@ const App: React.FC = () => {
           }
           .animate-marquee {
             animation: marquee 45s linear infinite;
+          }
+          @keyframes snowfall {
+            0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(620px) rotate(360deg); opacity: 0.3; }
+          }
+          .animate-snowfall {
+            animation: snowfall linear infinite;
+          }
+          @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+          }
+          .animate-twinkle {
+            animation: twinkle 1.5s ease-in-out infinite;
           }
         `}</style>
       </div>
