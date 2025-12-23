@@ -793,7 +793,7 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gamePhase, selectedCharacter, level, initLevel, drawObject, splitBall, playSound, score, lives]);
+  }, [gamePhase, selectedCharacter, level, initLevel, drawObject, handleObjectDestroyed, playSound, score, lives]);
 
   // Keyboard controls
   useEffect(() => {
