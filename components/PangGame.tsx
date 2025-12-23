@@ -66,9 +66,11 @@ const GROUND_Y = 440;
 const PLAYER_WIDTH = 40;
 const PLAYER_HEIGHT = 50;
 const HARPOON_SPEED = 6;
-const GRAVITY = 0.08;  // Reduced gravity for slower falling
-const BOUNCE_DAMPING = 0.95;
-const HORIZONTAL_SPEED = 1.2;  // Slower horizontal movement
+// PANG-style physics: constant bounce height, no acceleration
+const GRAVITY = 0.12;
+const MAX_FALL_SPEED = 3;  // Cap vertical speed
+const BOUNCE_VELOCITY = -4;  // Fixed bounce velocity like PANG
+const HORIZONTAL_SPEED = 1.0;  // Slow horizontal movement
 
 const BALL_SIZES = {
   large: { radius: 35, points: 100 },
@@ -105,75 +107,102 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
 
   // Audio context for PANG sounds
   const audioContextRef = useRef<AudioContext | null>(null);
+  const activeOscillatorsRef = useRef<OscillatorNode[]>([]);
+  const canPlaySoundRef = useRef(true);
 
-  // Cleanup audio context when game phase changes
-  useEffect(() => {
-    if (gamePhase !== 'playing' && audioContextRef.current) {
+  // Stop all sounds immediately
+  const stopAllSounds = useCallback(() => {
+    canPlaySoundRef.current = false;
+    activeOscillatorsRef.current.forEach(osc => {
+      try {
+        osc.stop();
+      } catch (e) {
+        // Already stopped
+      }
+    });
+    activeOscillatorsRef.current = [];
+    if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
-  }, [gamePhase]);
+  }, []);
+
+  // Cleanup audio context when game phase changes
+  useEffect(() => {
+    if (gamePhase !== 'playing') {
+      stopAllSounds();
+    } else {
+      canPlaySoundRef.current = true;
+    }
+  }, [gamePhase, stopAllSounds]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
+      stopAllSounds();
     };
-  }, []);
+  }, [stopAllSounds]);
 
   const playSound = useCallback((type: 'shoot' | 'pop' | 'hit' | 'levelup') => {
-    if (gamePhase !== 'playing') return;  // Don't play sounds if not playing
+    if (!canPlaySoundRef.current) return;  // Don't play sounds if disabled
 
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-    }
-    const ctx = audioContextRef.current;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    try {
+      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+        audioContextRef.current = new AudioContext();
+      }
+      const ctx = audioContextRef.current;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
 
-    switch (type) {
-      case 'shoot':
-        osc.frequency.setValueAtTime(800, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.1);
-        break;
-      case 'pop':
-        osc.frequency.setValueAtTime(600, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.4, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
-        break;
-      case 'hit':
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.5, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.3);
-        break;
-      case 'levelup':
-        osc.frequency.setValueAtTime(400, ctx.currentTime);
-        osc.frequency.setValueAtTime(500, ctx.currentTime + 0.1);
-        osc.frequency.setValueAtTime(600, ctx.currentTime + 0.2);
-        osc.frequency.setValueAtTime(800, ctx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
-        break;
+      // Track oscillator for cleanup
+      activeOscillatorsRef.current.push(osc);
+      osc.onended = () => {
+        const idx = activeOscillatorsRef.current.indexOf(osc);
+        if (idx > -1) activeOscillatorsRef.current.splice(idx, 1);
+      };
+
+      switch (type) {
+        case 'shoot':
+          osc.frequency.setValueAtTime(800, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.08);
+          break;
+        case 'pop':
+          osc.frequency.setValueAtTime(500, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.25, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+          break;
+        case 'hit':
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(200, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.15);  // Much shorter!
+          break;
+        case 'levelup':
+          osc.frequency.setValueAtTime(400, ctx.currentTime);
+          osc.frequency.setValueAtTime(600, ctx.currentTime + 0.1);
+          osc.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+          break;
+      }
+    } catch (e) {
+      // Audio error, ignore
     }
-  }, [gamePhase]);
+  }, []);
 
   // Draw pixel art objects
   const drawObject = useCallback((ctx: CanvasRenderingContext2D, ball: Ball) => {
@@ -672,8 +701,11 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
       let ballsToRemove: number[] = [];
 
       ballsRef.current.forEach(ball => {
-        // Apply gravity
+        // Apply gravity with speed cap (PANG-style physics)
         ball.vy += GRAVITY;
+        // Cap falling speed to prevent acceleration
+        if (ball.vy > MAX_FALL_SPEED) ball.vy = MAX_FALL_SPEED;
+
         ball.x += ball.vx;
         ball.y += ball.vy;
 
@@ -689,18 +721,16 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
           ball.vx = -Math.abs(ball.vx);
         }
 
-        // Bounce off ground
+        // Bounce off ground - PANG style: fixed bounce velocity
         if (ball.y + radius > GROUND_Y) {
           ball.y = GROUND_Y - radius;
-          ball.vy = -Math.abs(ball.vy) * BOUNCE_DAMPING;
-          // Ensure minimum bounce but keep it gentle
-          if (Math.abs(ball.vy) < 3) ball.vy = -3;
+          ball.vy = BOUNCE_VELOCITY;  // Always same bounce height
         }
 
         // Bounce off ceiling
         if (ball.y - radius < 0) {
           ball.y = radius;
-          ball.vy = Math.abs(ball.vy);
+          ball.vy = Math.abs(ball.vy) * 0.5;  // Gentle ceiling bounce
         }
 
         // Check collision with harpoons
@@ -732,29 +762,41 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
           }
         });
 
-        // Check collision with player
-        const playerLeft = playerXRef.current - PLAYER_WIDTH / 2;
-        const playerRight = playerXRef.current + PLAYER_WIDTH / 2;
-        const playerTop = GROUND_Y - PLAYER_HEIGHT;
+        // Check collision with player (only if not already hit this frame)
+        if (!ballsToRemove.includes(ball.id)) {
+          const playerLeft = playerXRef.current - PLAYER_WIDTH / 2;
+          const playerRight = playerXRef.current + PLAYER_WIDTH / 2;
+          const playerTop = GROUND_Y - PLAYER_HEIGHT;
 
-        if (
-          ball.x + radius > playerLeft &&
-          ball.x - radius < playerRight &&
-          ball.y + radius > playerTop &&
-          ball.y - radius < GROUND_Y
-        ) {
-          playSound('hit');
-          setLives(prev => {
-            const newLives = prev - 1;
-            if (newLives <= 0) {
-              setGamePhase('gameover');
-            } else {
-              // Reset position after hit
-              playerXRef.current = CANVAS_WIDTH / 2;
-              harpoonsRef.current = [];
-            }
-            return newLives;
-          });
+          if (
+            ball.x + radius > playerLeft &&
+            ball.x - radius < playerRight &&
+            ball.y + radius > playerTop &&
+            ball.y - radius < GROUND_Y
+          ) {
+            // Stop sounds before game over
+            stopAllSounds();
+            playSound('hit');
+
+            setLives(prev => {
+              const newLives = prev - 1;
+              if (newLives <= 0) {
+                // Small delay to let hit sound play briefly
+                setTimeout(() => {
+                  stopAllSounds();
+                  setGamePhase('gameover');
+                }, 100);
+              } else {
+                // Reset position after hit
+                playerXRef.current = CANVAS_WIDTH / 2;
+                harpoonsRef.current = [];
+                ballsRef.current = [];
+                // Respawn object after brief pause
+                setTimeout(() => spawnObject(), 500);
+              }
+              return newLives;
+            });
+          }
         }
 
         // Draw ball
