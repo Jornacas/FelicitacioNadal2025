@@ -4,7 +4,6 @@ import RetroInterface from './components/RetroInterface';
 import PixelSprite from './components/PixelSprite';
 import GameCanvas from './components/GameCanvas';
 import { SpriteConfig, GameState } from './types';
-import { analyzeStaffPhoto, generateXmasGreeting } from './services/geminiService';
 import { useChristmasMusic } from './hooks/useChristmasMusic';
 
 const DEFAULT_STAFF: SpriteConfig[] = [
@@ -147,9 +146,7 @@ const ChristmasTree: React.FC<{ progress: number }> = ({ progress }) => {
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.LOADING);
   const [staff, setStaff] = useState<SpriteConfig[]>(DEFAULT_STAFF);
-  const [greeting, setGreeting] = useState("BONES FESTES DESDE EIXOS CREATIVA!");
   const [storyStep, setStoryStep] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(false);
 
   // Christmas music - "A Betlem m'en vull anar"
@@ -172,30 +169,6 @@ const App: React.FC = () => {
   const resetStory = () => {
     setStoryStep(0);
     setGameState(GameState.GAME);
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsProcessing(true);
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = (reader.result as string).split(',')[1];
-        const newMember = await analyzeStaffPhoto(base64String);
-        setStaff(prev => [...prev, newMember]);
-        
-        const names = [...staff, newMember].map(s => s.name);
-        const newGreeting = await generateXmasGreeting(names);
-        setGreeting(newGreeting);
-        setIsProcessing(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("Error processing photo:", error);
-      setIsProcessing(false);
-    }
   };
 
   if (gameState === GameState.LOADING) {
@@ -343,8 +316,8 @@ const App: React.FC = () => {
 
       {gameState === GameState.ADMIN && (
         <div className="flex flex-col items-center gap-6 py-6">
-          <h2 className="text-2xl text-yellow-400 font-bold border-b-4 border-yellow-400 pb-2 uppercase tracking-widest">Personalitzador</h2>
-          
+          <h2 className="text-2xl text-yellow-400 font-bold border-b-4 border-yellow-400 pb-2 uppercase tracking-widest">L'Equip</h2>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 w-full p-8 bg-white/5 border-2 border-white/10">
             {staff.map((s, i) => (
               <div key={i} className="flex flex-col items-center p-4 hover:bg-white/10 transition-all cursor-help border-2 border-transparent hover:border-yellow-400/50 shadow-inner">
@@ -354,17 +327,6 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          {isProcessing ? (
-              <div className="bg-blue-900 p-10 text-center border-4 border-yellow-400 animate-pulse w-full max-w-md">
-                <p className="text-yellow-400 font-bold tracking-widest">DESCODIFICANT NOU PLAYER...</p>
-              </div>
-            ) : (
-              <label className="cursor-pointer bg-yellow-400 text-black px-12 py-5 font-bold hover:bg-yellow-300 border-b-8 border-yellow-700 active:border-b-0 active:translate-y-2 transition-all uppercase tracking-widest shadow-lg">
-                FOTO PER CARACTERITZAR
-                <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-              </label>
-            )}
-          
           <button onClick={() => setGameState(GameState.MENU)} className="mt-4 text-yellow-400 hover:text-white transition-colors uppercase text-sm border-2 border-yellow-400/30 px-6 py-2">
             TORNAR AL MENÚ
           </button>
