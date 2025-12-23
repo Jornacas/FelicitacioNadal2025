@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SpriteConfig } from '../types';
 import PixelSprite from './PixelSprite';
+import { usePangMusic } from '../hooks/usePangMusic';
 
 // Character data with themed objects
 const CHARACTER_DATA: { [key: string]: { objects: ObjectType[], description: string } } = {
@@ -82,10 +83,14 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
+  const [musicEnabled, setMusicEnabled] = useState(false);
   const [highScore, setHighScore] = useState(() => {
     const saved = localStorage.getItem('pangHighScore');
     return saved ? parseInt(saved) : 0;
   });
+
+  // PANG arcade music
+  usePangMusic(musicEnabled && gamePhase === 'playing');
 
   // Game state refs for animation loop
   const playerXRef = useRef(CANVAS_WIDTH / 2);
@@ -762,7 +767,18 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
           <p>📱 Tàctil: Botons a pantalla</p>
         </div>
 
-        <p className="text-yellow-400/60 text-sm">Rècord: {highScore} punts</p>
+        <button
+          onClick={() => setMusicEnabled(!musicEnabled)}
+          className={`mt-2 px-4 py-2 text-sm font-bold border-2 transition-all ${
+            musicEnabled
+              ? 'bg-green-600 text-white border-green-400'
+              : 'bg-gray-800 text-yellow-400 border-yellow-400/50'
+          }`}
+        >
+          {musicEnabled ? '🎵 MÚSICA ON' : '🔇 MÚSICA OFF'}
+        </button>
+
+        <p className="text-yellow-400/60 text-sm mt-2">Rècord: {highScore} punts</p>
 
         <button
           onClick={onBack}
@@ -878,12 +894,24 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         </button>
       </div>
 
-      <button
-        onClick={onBack}
-        className="mt-4 text-yellow-400 hover:text-white transition-colors uppercase text-xs border border-yellow-400/30 px-4 py-1"
-      >
-        ✕ SORTIR
-      </button>
+      <div className="flex gap-4 mt-4">
+        <button
+          onClick={() => setMusicEnabled(!musicEnabled)}
+          className={`px-3 py-1 text-xs font-bold border transition-all ${
+            musicEnabled
+              ? 'bg-green-600 text-white border-green-400'
+              : 'bg-gray-800 text-yellow-400 border-yellow-400/50'
+          }`}
+        >
+          {musicEnabled ? '🎵' : '🔇'}
+        </button>
+        <button
+          onClick={onBack}
+          className="text-yellow-400 hover:text-white transition-colors uppercase text-xs border border-yellow-400/30 px-4 py-1"
+        >
+          ✕ SORTIR
+        </button>
+      </div>
     </div>
   );
 };
