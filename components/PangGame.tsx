@@ -65,18 +65,19 @@ const CANVAS_HEIGHT = 480;
 const GROUND_Y = 440;
 const PLAYER_WIDTH = 40;
 const PLAYER_HEIGHT = 50;
-const HARPOON_SPEED = 6;
-// PANG-style physics: constant bounce height, no acceleration
-const GRAVITY = 0.12;
-const MAX_FALL_SPEED = 3;  // Cap vertical speed
-const BOUNCE_VELOCITY = -4;  // Fixed bounce velocity like PANG
-const HORIZONTAL_SPEED = 1.0;  // Slow horizontal movement
+const HARPOON_SPEED = 5;
+
+// MUCH SLOWER physics - easy to play
+const GRAVITY = 0.05;           // Very gentle gravity
+const MAX_FALL_SPEED = 1.5;     // Very slow fall
+const BOUNCE_VELOCITY = -2.5;   // Gentle bounce
+const HORIZONTAL_SPEED = 0.6;   // Very slow horizontal
 
 const BALL_SIZES = {
-  large: { radius: 35, points: 100 },
-  medium: { radius: 25, points: 200 },
-  small: { radius: 18, points: 300 },
-  tiny: { radius: 12, points: 500 }
+  large: { radius: 32, points: 100 },
+  medium: { radius: 24, points: 200 },
+  small: { radius: 16, points: 300 },
+  tiny: { radius: 10, points: 500 }
 };
 
 const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
@@ -347,33 +348,97 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         ctx.fill();
         break;
 
-      // LUCIA - Gears
+      // LUCIA - Engranatges (Gears)
       case 'gear-big':
-      case 'gear-medium':
-      case 'gear-small':
-      case 'gear-colored':
-        const gearColor = objectType === 'gear-colored' ? '#FF6B6B' :
-                         objectType === 'gear-big' ? '#4ECDC4' :
-                         objectType === 'gear-medium' ? '#45B7D1' : '#96CEB4';
-        ctx.fillStyle = gearColor;
+        // Gran engranatge blau
+        ctx.fillStyle = '#3498DB';
         ctx.beginPath();
-        ctx.arc(0, 0, radius * 0.7, 0, Math.PI * 2);
+        ctx.arc(0, 0, radius * 0.65, 0, Math.PI * 2);
         ctx.fill();
-        // Gear teeth
-        for (let i = 0; i < 8; i++) {
-          const angle = (i / 8) * Math.PI * 2;
-          ctx.fillRect(
-            Math.cos(angle) * radius * 0.5 - radius * 0.15,
-            Math.sin(angle) * radius * 0.5 - radius * 0.15,
-            radius * 0.3,
-            radius * 0.3
-          );
+        // Dents de l'engranatge
+        ctx.fillStyle = '#2980B9';
+        for (let i = 0; i < 10; i++) {
+          const angle = (i / 10) * Math.PI * 2;
+          ctx.save();
+          ctx.rotate(angle);
+          ctx.fillRect(-radius * 0.12, radius * 0.5, radius * 0.24, radius * 0.35);
+          ctx.restore();
         }
-        // Center hole
-        ctx.fillStyle = '#333';
+        // Forat central
+        ctx.fillStyle = '#1a1a2e';
         ctx.beginPath();
         ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
         ctx.fill();
+        // Brillantor
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.arc(-radius * 0.2, -radius * 0.2, radius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'gear-medium':
+        // Engranatge vermell mitjà
+        ctx.fillStyle = '#E74C3C';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#C0392B';
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2;
+          ctx.save();
+          ctx.rotate(angle);
+          ctx.fillRect(-radius * 0.15, radius * 0.45, radius * 0.3, radius * 0.4);
+          ctx.restore();
+        }
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'gear-small':
+        // Engranatge groc petit
+        ctx.fillStyle = '#F1C40F';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.55, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#D4AC0D';
+        for (let i = 0; i < 6; i++) {
+          const angle = (i / 6) * Math.PI * 2;
+          ctx.save();
+          ctx.rotate(angle);
+          ctx.fillRect(-radius * 0.18, radius * 0.4, radius * 0.36, radius * 0.45);
+          ctx.restore();
+        }
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'gear-colored':
+        // Engranatge verd
+        ctx.fillStyle = '#2ECC71';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#27AE60';
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2;
+          ctx.save();
+          ctx.rotate(angle);
+          ctx.fillRect(-radius * 0.1, radius * 0.45, radius * 0.2, radius * 0.35);
+          ctx.restore();
+        }
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        // Forats decoratius
+        ctx.fillStyle = '#1a1a2e';
+        for (let i = 0; i < 4; i++) {
+          const angle = (i / 4) * Math.PI * 2 + Math.PI / 4;
+          ctx.beginPath();
+          ctx.arc(Math.cos(angle) * radius * 0.35, Math.sin(angle) * radius * 0.35, radius * 0.08, 0, Math.PI * 2);
+          ctx.fill();
+        }
         break;
 
       // LAURA - Clay
@@ -634,11 +699,15 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     if (!ctx) return;
 
     let animationId: number;
+    let isRunning = true;
 
     const gameLoop = () => {
-      // Clear canvas
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      if (!isRunning) return;
+
+      try {
+        // Clear canvas
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
       // Draw ground
       ctx.fillStyle = '#2d2d44';
@@ -824,18 +893,25 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
       ctx.fillText(`NIVELL: ${level}`, CANVAS_WIDTH / 2 - 50, 30);
       ctx.fillText(`VIDES: ${'❤️'.repeat(lives)}`, CANVAS_WIDTH - 150, 30);
 
-      animationId = requestAnimationFrame(gameLoop);
+      } catch (error) {
+        console.error('Game loop error:', error);
+      }
+
+      if (isRunning) {
+        animationId = requestAnimationFrame(gameLoop);
+      }
     };
 
     gameLoop();
     gameLoopRef.current = animationId;
 
     return () => {
+      isRunning = false;
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gamePhase, selectedCharacter, level, initLevel, drawObject, handleObjectDestroyed, playSound, score, lives]);
+  }, [gamePhase, selectedCharacter, level, initLevel, drawObject, handleObjectDestroyed, playSound, stopAllSounds, spawnObject, score, lives]);
 
   // Keyboard controls
   useEffect(() => {
