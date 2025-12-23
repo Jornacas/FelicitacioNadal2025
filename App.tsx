@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import RetroInterface from './components/RetroInterface';
 import PixelSprite from './components/PixelSprite';
 import GameCanvas from './components/GameCanvas';
@@ -148,6 +148,20 @@ const App: React.FC = () => {
   const [staff, setStaff] = useState<SpriteConfig[]>(DEFAULT_STAFF);
   const [storyStep, setStoryStep] = useState(0);
   const [musicEnabled, setMusicEnabled] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ width: 850, height: 520 });
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+
+  // Responsive canvas sizing
+  useEffect(() => {
+    const updateSize = () => {
+      const width = Math.min(window.innerWidth - 16, 850);
+      const height = Math.min(window.innerHeight - 150, 520);
+      setCanvasSize({ width, height });
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   // Christmas music - "A Betlem m'en vull anar"
   useChristmasMusic(musicEnabled && gameState === GameState.GAME);
@@ -187,28 +201,28 @@ const App: React.FC = () => {
   return (
     <RetroInterface title="THE XMAS ADVENTURE">
       {gameState === GameState.MENU && (
-        <div className="flex flex-col items-center gap-6 py-4">
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl text-white font-bold tracking-tighter shadow-sm">NADAL 8-BIT</h2>
-            <p className="text-yellow-400 text-sm italic tracking-widest">WWW.EIXOSCREATIVA.COM</p>
+        <div className="flex flex-col items-center gap-4 sm:gap-6 py-2 sm:py-4">
+          <div className="text-center space-y-1 sm:space-y-2">
+            <h2 className="text-2xl sm:text-3xl text-white font-bold tracking-tighter shadow-sm">NADAL 8-BIT</h2>
+            <p className="text-yellow-400 text-xs sm:text-sm italic tracking-widest">WWW.EIXOSCREATIVA.COM</p>
           </div>
 
-          <div className="flex justify-center gap-2 bg-white/5 p-4 border-y-4 border-yellow-400/50 backdrop-blur-sm w-full">
+          <div className="flex flex-wrap justify-center gap-1 sm:gap-2 bg-white/5 p-2 sm:p-4 border-y-4 border-yellow-400/50 backdrop-blur-sm w-full">
             {staff.map((member, idx) => (
-              <PixelSprite key={idx} config={member} size={90} direction="front" pose="standing" />
+              <PixelSprite key={idx} config={member} size={window.innerWidth < 640 ? 55 : 90} direction="front" pose="standing" />
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
             <button
               onClick={resetStory}
-              className="bg-green-600 hover:bg-green-500 text-white px-12 py-5 border-b-8 border-green-950 active:border-b-0 active:translate-y-2 transition-all text-xl font-bold shadow-xl uppercase tracking-widest"
+              className="bg-green-600 hover:bg-green-500 text-white px-8 sm:px-12 py-3 sm:py-5 border-b-4 sm:border-b-8 border-green-950 active:border-b-0 active:translate-y-2 transition-all text-base sm:text-xl font-bold shadow-xl uppercase tracking-widest"
             >
               INICIAR HISTÒRIA
             </button>
             <button
               onClick={() => setGameState(GameState.ADMIN)}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-5 border-b-8 border-blue-950 active:border-b-0 active:translate-y-2 transition-all text-xl font-bold opacity-80 uppercase tracking-widest"
+              className="bg-blue-600 hover:bg-blue-500 text-white px-6 sm:px-8 py-3 sm:py-5 border-b-4 sm:border-b-8 border-blue-950 active:border-b-0 active:translate-y-2 transition-all text-base sm:text-xl font-bold opacity-80 uppercase tracking-widest"
             >
               STAFF
             </button>
@@ -218,7 +232,11 @@ const App: React.FC = () => {
 
       {gameState === GameState.GAME && (
         <div className="flex flex-col">
-          <div className="relative h-[520px] w-full overflow-hidden bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] border-8 border-b-0 border-yellow-400 shadow-2xl">
+          <div
+            ref={gameContainerRef}
+            className="relative w-full overflow-hidden bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] border-4 sm:border-8 border-b-0 border-yellow-400 shadow-2xl"
+            style={{ height: canvasSize.height }}
+          >
             {/* Christmas Lights at top */}
             <ChristmasLights />
 
@@ -245,17 +263,17 @@ const App: React.FC = () => {
             {/* UNIFIED GAME CANVAS - Tree and Characters all in one */}
             <div className="absolute inset-0 flex items-end justify-center">
               <GameCanvas
-                width={850}
-                height={520}
+                width={canvasSize.width}
+                height={canvasSize.height}
                 staff={staff}
                 storyStep={storyStep}
               />
             </div>
 
           {/* Narrative UI */}
-          <div className="absolute top-12 w-full flex justify-center px-4 z-40">
-            <div className="bg-black/95 border-4 border-yellow-400 p-5 max-w-2xl w-full text-center shadow-[6px_6px_0px_#FFD700] animate-slideDown">
-               <p className="text-yellow-400 text-base tracking-wide uppercase font-mono leading-relaxed">
+          <div className="absolute top-8 sm:top-12 w-full flex justify-center px-2 sm:px-4 z-40">
+            <div className="bg-black/95 border-2 sm:border-4 border-yellow-400 p-2 sm:p-5 max-w-2xl w-full text-center shadow-[4px_4px_0px_#FFD700] sm:shadow-[6px_6px_0px_#FFD700] animate-slideDown">
+               <p className="text-yellow-400 text-xs sm:text-base tracking-wide uppercase font-mono leading-relaxed">
                   {storyStep < 300 && "🎮 L'EQUIP D'EIXOS ARRIBA AMB REGALS..."}
                   {storyStep >= 300 && storyStep < 550 && "🎄 CAMINANT CAP A L'ARBRE DE NADAL..."}
                   {storyStep >= 550 && storyStep < 800 && "🎁 DEIXANT ELS REGALS SOTA L'ARBRE!"}
@@ -297,21 +315,21 @@ const App: React.FC = () => {
           </div>
 
           {/* Control bar - outside the game canvas */}
-          <div className="flex justify-between items-center px-4 py-2 bg-black border-8 border-t-0 border-yellow-400">
+          <div className="flex justify-between items-center px-2 sm:px-4 py-2 bg-black border-4 sm:border-8 border-t-0 border-yellow-400">
             <button
               onClick={() => setMusicEnabled(!musicEnabled)}
-              className={`px-4 py-2 text-xs border-2 transition-all font-bold hover:scale-105 ${
+              className={`px-2 sm:px-4 py-1 sm:py-2 text-[10px] sm:text-xs border-2 transition-all font-bold hover:scale-105 ${
                 musicEnabled
                   ? 'bg-green-600 text-white border-green-400 hover:bg-green-500'
                   : 'bg-gray-800 text-white border-yellow-400/50 hover:bg-yellow-700'
               }`}
             >
-              {musicEnabled ? '🎵 MÚSICA ON' : '🔇 MÚSICA OFF'}
+              {musicEnabled ? '🎵 ON' : '🔇 OFF'}
             </button>
 
             <button
               onClick={() => setGameState(GameState.MENU)}
-              className="bg-gray-800 text-white px-4 py-2 text-xs border-2 border-yellow-400/50 hover:bg-red-700 hover:border-red-400 transition-all font-bold hover:scale-105"
+              className="bg-gray-800 text-white px-2 sm:px-4 py-1 sm:py-2 text-[10px] sm:text-xs border-2 border-yellow-400/50 hover:bg-red-700 hover:border-red-400 transition-all font-bold hover:scale-105"
             >
               ⏭ SALTAR
             </button>
