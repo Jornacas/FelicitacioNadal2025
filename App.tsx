@@ -6,6 +6,17 @@ import GameCanvas from './components/GameCanvas';
 import { SpriteConfig, GameState } from './types';
 import { useChristmasMusic } from './hooks/useChristmasMusic';
 
+const MONITORS = [
+  "Leo Argento", "Georgina Carreras", "Enric Chueca", "Ester Palau", "Unai Ruiz",
+  "Zoe Javierre", "Ignasi Julia", "Anna Bitlloch", "Joel Plaza", "Maria Ileana",
+  "Judit Pesquero", "Miriam Miranda", "Laura Santander", "Gloria Sanchez", "Laia Lopez",
+  "Lorena Vega", "Paula Lucas", "Alexandra Gae", "Javier Cabezas", "Marina Gomez",
+  "Claudia Caracuel", "Ariadna Puigdemasa", "Gemma Duran", "Jordi Bonet", "David Illarreta",
+  "Didac Pardo", "Maria Torner", "Karim ElBair", "Youssef Bendahmane", "Sanny Paredes",
+  "Carla Mayo", "Paola Belmonte", "Erik Silva", "Natalia Lozada", "Marta Cisneros",
+  "Gemma Prunes", "Jaume Bernabeu", "Nuria Sanchez"
+];
+
 const DEFAULT_STAFF: SpriteConfig[] = [
   {
     hairColor: 'orange', skinColor: 'pastelYellow', shirtColor: 'green', pantsColor: 'blue',
@@ -62,6 +73,19 @@ const Snowfall: React.FC = () => {
           }}
         />
       ))}
+    </div>
+  );
+};
+
+// Scrolling banner with monitor names
+const MonitorsBanner: React.FC = () => {
+  const text = "★ GRÀCIES ALS NOSTRES MONITORS ★ " + MONITORS.join(" ✦ ") + " ★ ";
+  return (
+    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-red-800 via-red-700 to-red-800 border-t-2 border-yellow-400 overflow-hidden h-6 flex items-center z-30">
+      <div className="animate-marquee whitespace-nowrap flex">
+        <span className="text-yellow-300 text-xs font-bold mx-4">{text}</span>
+        <span className="text-yellow-300 text-xs font-bold mx-4">{text}</span>
+      </div>
     </div>
   );
 };
@@ -242,9 +266,12 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          <div className="absolute inset-0 flex items-end justify-center">
+          <div className="absolute inset-0 flex items-end justify-center pb-6">
             <GameCanvas width={850} height={520} staff={staff} storyStep={storyStep} />
           </div>
+
+          {/* Monitors banner */}
+          <MonitorsBanner />
 
           {/* Narrative UI - compact for mobile */}
           <div className="absolute top-2 w-full flex justify-center px-2 z-40">
@@ -363,7 +390,7 @@ const App: React.FC = () => {
             </div>
 
             {/* UNIFIED GAME CANVAS - Tree and Characters all in one */}
-            <div className="absolute inset-0 flex items-end justify-center">
+            <div className="absolute inset-0 flex items-end justify-center pb-6">
               <GameCanvas
                 width={850}
                 height={520}
@@ -371,6 +398,9 @@ const App: React.FC = () => {
                 storyStep={storyStep}
               />
             </div>
+
+            {/* Monitors banner */}
+            <MonitorsBanner />
 
           {/* Narrative UI */}
           <div className="absolute top-8 sm:top-12 w-full flex justify-center px-2 sm:px-4 z-40">
@@ -528,6 +558,14 @@ const App: React.FC = () => {
 
         .animate-fadeIn {
           animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
         }
       `}</style>
     </RetroInterface>
