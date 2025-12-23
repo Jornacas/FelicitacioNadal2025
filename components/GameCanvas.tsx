@@ -35,7 +35,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ width, height, staff, storyStep
       // === SANTA'S SLEIGH WITH BANNER (drawn FIRST so it goes BEHIND tree) ===
       const sleighCycle = (time / 35) % (width + 600);
       const sleighX = -250 + sleighCycle;
-      const sleighY = 130 + Math.sin(time / 500) * 8;
+      const sleighY = 200 + Math.sin(time / 500) * 8;
 
       if (sleighX > -100 && sleighX < width + 300) {
         // Banner FIRST (behind everything) - trails to the left - BIGGER
