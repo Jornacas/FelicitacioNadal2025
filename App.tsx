@@ -150,16 +150,21 @@ const App: React.FC = () => {
   const [musicEnabled, setMusicEnabled] = useState(false);
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
-  // Responsive scaling - siempre usar canvas fijo y escalar con CSS
+  // Responsive scaling - en móvil, usar toda la pantalla
   const [scale, setScale] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const updateScale = () => {
-      const containerWidth = window.innerWidth - 20;
-      const containerHeight = window.innerHeight - 120;
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+
+      // En móvil: usar toda la pantalla
+      const containerWidth = mobile ? window.innerWidth : window.innerWidth - 40;
+      const containerHeight = mobile ? window.innerHeight - 50 : window.innerHeight - 150;
       const scaleX = containerWidth / 850;
       const scaleY = containerHeight / 520;
-      const newScale = Math.min(scaleX, scaleY, 1); // nunca más grande que 1
+      const newScale = Math.min(scaleX, scaleY, 1);
       setScale(newScale);
     };
     updateScale();
@@ -203,6 +208,90 @@ const App: React.FC = () => {
           <p className="text-yellow-400 text-xs font-mono tracking-widest uppercase text-center">Iniciant Experiència Nadalenca<br/>Eixos Creativa v2.0</p>
         </div>
       </RetroInterface>
+    );
+  }
+
+  // En móvil y en modo GAME: pantalla completa sin RetroInterface
+  if (isMobile && gameState === GameState.GAME) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] flex flex-col items-center justify-center">
+        <div
+          ref={gameContainerRef}
+          className="relative overflow-hidden origin-center"
+          style={{
+            width: 850,
+            height: 520,
+            transform: `scale(${scale})`
+          }}
+        >
+          <ChristmasLights />
+          <Snowfall />
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(30)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute bg-white rounded-full animate-twinkle"
+                style={{
+                  left: `${(i * 17 + i * 3) % 100}%`,
+                  top: `${(i * 13) % 50}%`,
+                  width: `${1 + (i % 3)}px`,
+                  height: `${1 + (i % 3)}px`,
+                  animationDelay: `${i * 0.1}s`
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="absolute inset-0 flex items-end justify-center">
+            <GameCanvas width={850} height={520} staff={staff} storyStep={storyStep} />
+          </div>
+
+          {/* Narrative UI - compact for mobile */}
+          <div className="absolute top-2 w-full flex justify-center px-2 z-40">
+            <div className="bg-black/90 border-2 border-yellow-400 px-3 py-1 text-center">
+              <p className="text-yellow-400 text-[10px] uppercase font-mono">
+                {storyStep < 300 && "🎮 L'EQUIP D'EIXOS ARRIBA..."}
+                {storyStep >= 300 && storyStep < 550 && "🎄 CAP A L'ARBRE..."}
+                {storyStep >= 550 && storyStep < 800 && "🎁 DEIXANT REGALS!"}
+                {storyStep >= 800 && storyStep < 1050 && "⭐ FOTO GRUPAL!"}
+                {storyStep >= 1050 && storyStep < 1400 && "🏆 BONES FESTES!"}
+                {storyStep >= 1400 && "✨ FELIÇ 2026!"}
+              </p>
+            </div>
+          </div>
+
+          {/* Final overlay for mobile */}
+          {storyStep >= 1550 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-50">
+              <div className="text-center p-4">
+                <h1 className="text-3xl text-yellow-400 mb-2 font-black animate-pulse">BONES FESTES</h1>
+                <p className="text-white text-sm mb-1">EIXOS CREATIVA</p>
+                <p className="text-yellow-300 text-xs mb-4">US DESITJA FELIÇ 2026</p>
+                <div className="flex gap-2 justify-center">
+                  <button onClick={resetStory} className="bg-green-600 text-white px-4 py-2 text-xs font-bold">🔄 REPETIR</button>
+                  <button onClick={() => setGameState(GameState.MENU)} className="bg-red-600 text-white px-4 py-2 text-xs font-bold">🏠 MENÚ</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Controls - bottom */}
+          <div className="absolute bottom-2 left-2 right-2 flex justify-between z-40">
+            <button
+              onClick={() => setMusicEnabled(!musicEnabled)}
+              className={`px-2 py-1 text-[10px] font-bold ${musicEnabled ? 'bg-green-600 text-white' : 'bg-black/80 text-yellow-400 border border-yellow-400'}`}
+            >
+              {musicEnabled ? '🎵' : '🔇'}
+            </button>
+            <button
+              onClick={() => setGameState(GameState.MENU)}
+              className="bg-black/80 text-yellow-400 border border-yellow-400 px-2 py-1 text-[10px] font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
