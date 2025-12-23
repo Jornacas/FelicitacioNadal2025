@@ -187,15 +187,28 @@ const App: React.FC = () => {
   // Responsive scaling - en móvil, usar toda la pantalla
   const [scale, setScale] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
     const updateScale = () => {
-      const mobile = window.innerWidth < 768;
+      const mobile = window.innerWidth < 768 || window.innerHeight < 500;
+      const landscape = window.innerWidth > window.innerHeight && mobile;
       setIsMobile(mobile);
+      setIsLandscape(landscape);
 
-      // En móvil: usar toda la pantalla
-      const containerWidth = mobile ? window.innerWidth : window.innerWidth - 40;
-      const containerHeight = mobile ? window.innerHeight - 50 : window.innerHeight - 150;
+      // En landscape móvil: usar TODA la pantalla
+      let containerWidth, containerHeight;
+      if (landscape) {
+        containerWidth = window.innerWidth;
+        containerHeight = window.innerHeight;
+      } else if (mobile) {
+        containerWidth = window.innerWidth;
+        containerHeight = window.innerHeight - 50;
+      } else {
+        containerWidth = window.innerWidth - 40;
+        containerHeight = window.innerHeight - 150;
+      }
+
       const scaleX = containerWidth / 850;
       const scaleY = containerHeight / 520;
       const newScale = Math.min(scaleX, scaleY, 1);
@@ -245,7 +258,82 @@ const App: React.FC = () => {
     );
   }
 
-  // En móvil y en modo GAME: pantalla completa sin RetroInterface
+  // En móvil LANDSCAPE y en modo GAME: pantalla completa total
+  if (isLandscape && gameState === GameState.GAME) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center overflow-hidden">
+        <div
+          ref={gameContainerRef}
+          className="relative overflow-hidden origin-center"
+          style={{
+            width: 850,
+            height: 520,
+            transform: `scale(${scale})`
+          }}
+        >
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050]" />
+
+          <ChristmasLights />
+          <Snowfall />
+
+          {/* Stars */}
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(30)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute bg-white rounded-full animate-twinkle"
+                style={{
+                  left: `${(i * 17 + i * 3) % 100}%`,
+                  top: `${(i * 13) % 50}%`,
+                  width: `${1 + (i % 3)}px`,
+                  height: `${1 + (i % 3)}px`,
+                  animationDelay: `${i * 0.1}s`
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="absolute inset-0 flex items-end justify-center pb-6">
+            <GameCanvas width={850} height={520} staff={staff} storyStep={storyStep} />
+          </div>
+
+          <MonitorsBanner />
+
+          {/* Final overlay */}
+          {storyStep >= 1550 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/95 z-50">
+              <div className="text-center">
+                <h1 className="text-4xl text-yellow-400 mb-2 font-black animate-pulse">BONES FESTES</h1>
+                <p className="text-white text-lg mb-1">EIXOS CREATIVA</p>
+                <p className="text-yellow-300 text-sm mb-4">US DESITJA FELIÇ 2026</p>
+                <div className="flex gap-3 justify-center">
+                  <button onClick={resetStory} className="bg-green-600 text-white px-6 py-2 text-sm font-bold">🔄 REPETIR</button>
+                  <button onClick={() => setGameState(GameState.MENU)} className="bg-red-600 text-white px-6 py-2 text-sm font-bold">🏠 MENÚ</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Minimal controls - corners */}
+          <button
+            onClick={() => setMusicEnabled(!musicEnabled)}
+            className={`absolute top-2 left-2 w-8 h-8 flex items-center justify-center text-sm font-bold z-40 ${musicEnabled ? 'bg-green-600 text-white' : 'bg-black/60 text-yellow-400'}`}
+          >
+            {musicEnabled ? '🎵' : '🔇'}
+          </button>
+          <button
+            onClick={() => setGameState(GameState.MENU)}
+            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/60 text-yellow-400 text-sm font-bold z-40"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // En móvil PORTRAIT y en modo GAME: pantalla completa sin RetroInterface
   if (isMobile && gameState === GameState.GAME) {
     return (
       <div className="fixed inset-0 bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] flex flex-col items-center justify-center">
@@ -313,7 +401,7 @@ const App: React.FC = () => {
           )}
 
           {/* Controls - bottom */}
-          <div className="absolute bottom-2 left-2 right-2 flex justify-between z-40">
+          <div className="absolute bottom-8 left-2 right-2 flex justify-between z-40">
             <button
               onClick={() => setMusicEnabled(!musicEnabled)}
               className={`px-2 py-1 text-[10px] font-bold ${musicEnabled ? 'bg-green-600 text-white' : 'bg-black/80 text-yellow-400 border border-yellow-400'}`}
