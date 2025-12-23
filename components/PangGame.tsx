@@ -19,7 +19,7 @@ const CHARACTER_DATA: { [key: string]: { objects: ObjectType[], description: str
   },
   'Lidia': {
     description: 'Els Marrons',
-    objects: ['rock-brown', 'box-brown', 'bag-brown', 'weight-brown']
+    objects: ['anvil', 'poop']
   },
   'Anna': {
     description: 'Recursos Humans',
@@ -35,7 +35,7 @@ type ObjectType =
   | 'scratch-motion' | 'scratch-looks' | 'scratch-sound' | 'scratch-events' | 'scratch-control' | 'scratch-cat'
   | 'gear-big' | 'gear-medium' | 'gear-small' | 'gear-colored'
   | 'clay-red' | 'clay-blue' | 'clay-yellow' | 'clay-green'
-  | 'rock-brown' | 'box-brown' | 'bag-brown' | 'weight-brown'
+  | 'anvil' | 'poop'
   | 'cv-paper' | 'cv-folder' | 'cv-stack' | 'contract'
   | 'pencil' | 'sharpener' | 'eraser'
   | 'invoice' | 'coin-gold' | 'coin-silver' | 'shopping-cart';
@@ -476,59 +476,75 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         ctx.fill();
         break;
 
-      // LIDIA - Brown heavy things
-      case 'rock-brown':
+      // LIDIA - Els Marrons (encluses i cacas)
+      case 'anvil':
+        // Enclusa marró amb KG
+        ctx.fillStyle = '#5D3A1A';
+        // Base
+        ctx.fillRect(-radius * 0.9, radius * 0.3, radius * 1.8, radius * 0.5);
+        // Cos principal
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(-radius * 0.7, -radius * 0.2, radius * 1.4, radius * 0.6);
+        // Part superior (on es pica)
+        ctx.fillStyle = '#A0522D';
+        ctx.fillRect(-radius * 0.5, -radius * 0.5, radius * 1.3, radius * 0.35);
+        // Banya de l'enclusa
         ctx.fillStyle = '#8B4513';
         ctx.beginPath();
-        ctx.moveTo(-radius, radius * 0.3);
-        ctx.lineTo(-radius * 0.7, -radius * 0.5);
-        ctx.lineTo(0, -radius);
-        ctx.lineTo(radius * 0.8, -radius * 0.4);
-        ctx.lineTo(radius, radius * 0.5);
-        ctx.lineTo(0, radius);
+        ctx.moveTo(radius * 0.8, -radius * 0.5);
+        ctx.lineTo(radius * 1.1, -radius * 0.3);
+        ctx.lineTo(radius * 1.1, -radius * 0.1);
+        ctx.lineTo(radius * 0.8, -radius * 0.15);
         ctx.closePath();
         ctx.fill();
-        ctx.fillStyle = '#A0522D';
-        ctx.beginPath();
-        ctx.arc(-radius * 0.2, -radius * 0.2, radius * 0.3, 0, Math.PI * 2);
-        ctx.fill();
+        // Text KG
+        ctx.fillStyle = '#FFF';
+        ctx.font = `bold ${radius * 0.4}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('KG', 0, radius * 0.15);
+        // Brillantor
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(-radius * 0.4, -radius * 0.45, radius * 0.8, radius * 0.1);
         break;
-      case 'box-brown':
-        ctx.fillStyle = '#A0522D';
-        ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
-        ctx.strokeStyle = '#5D3A1A';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(-radius, -radius, radius * 2, radius * 2);
-        ctx.beginPath();
-        ctx.moveTo(-radius, 0);
-        ctx.lineTo(radius, 0);
-        ctx.moveTo(0, -radius);
-        ctx.lineTo(0, radius);
-        ctx.stroke();
-        break;
-      case 'bag-brown':
+      case 'poop':
+        // Caca emoji amb ulls
         ctx.fillStyle = '#8B4513';
+        // Capa inferior (més gran)
         ctx.beginPath();
-        ctx.moveTo(-radius * 0.8, radius);
-        ctx.lineTo(-radius, -radius * 0.3);
-        ctx.quadraticCurveTo(-radius * 0.5, -radius, 0, -radius * 0.8);
-        ctx.quadraticCurveTo(radius * 0.5, -radius, radius, -radius * 0.3);
-        ctx.lineTo(radius * 0.8, radius);
-        ctx.closePath();
+        ctx.ellipse(0, radius * 0.5, radius * 0.8, radius * 0.35, 0, 0, Math.PI * 2);
         ctx.fill();
+        // Capa mitjana
+        ctx.beginPath();
+        ctx.ellipse(0, radius * 0.1, radius * 0.6, radius * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Capa superior amb punta
+        ctx.beginPath();
+        ctx.ellipse(0, -radius * 0.25, radius * 0.45, radius * 0.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Punta corbada
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.15, -radius * 0.5);
+        ctx.quadraticCurveTo(radius * 0.3, -radius * 0.9, radius * 0.25, -radius * 0.55);
+        ctx.quadraticCurveTo(radius * 0.2, -radius * 0.45, -radius * 0.1, -radius * 0.45);
+        ctx.fill();
+        // Ulls blancs
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.ellipse(-radius * 0.2, -radius * 0.15, radius * 0.18, radius * 0.22, 0, 0, Math.PI * 2);
+        ctx.ellipse(radius * 0.2, -radius * 0.15, radius * 0.18, radius * 0.22, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Pupil·les
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(-radius * 0.2, -radius * 0.1, radius * 0.08, 0, Math.PI * 2);
+        ctx.arc(radius * 0.2, -radius * 0.1, radius * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+        // Somriure
         ctx.strokeStyle = '#5D3A1A';
         ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, radius * 0.15, radius * 0.25, 0.2, Math.PI - 0.2);
         ctx.stroke();
-        break;
-      case 'weight-brown':
-        ctx.fillStyle = '#654321';
-        ctx.fillRect(-radius, -radius * 0.3, radius * 2, radius * 1.3);
-        ctx.fillRect(-radius * 1.2, -radius * 0.5, radius * 0.4, radius * 0.4);
-        ctx.fillRect(radius * 0.8, -radius * 0.5, radius * 0.4, radius * 0.4);
-        ctx.fillStyle = '#FFF';
-        ctx.font = `bold ${radius * 0.6}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.fillText('KG', 0, radius * 0.3);
         break;
 
       // ANNA - HR Papers (més identificables)
