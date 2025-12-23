@@ -13,7 +13,7 @@ const MONITORS = [
   "Jaume Bernabeu", "Javier Cabezas", "Joel Plaza", "Jordi Bonet", "Judit Pesquero",
   "Karim ElBair", "Laia Lopez", "Laura Santander", "Leo Argento", "Lorena Vega",
   "Maria Ileana", "Maria Torner", "Marina Gomez", "Marta Cisneros", "Miriam Miranda",
-  "Natalia Lozada", "Nuria Sanchez", "Paola Belmonte", "Paula Lucas", "Sanny Paredes",
+  "Natalia Lozada", "Nuria Sanchez", "Paula Lucas", "Sanny Paredes",
   "Unai Ruiz", "Youssef Bendahmane", "Zoe Javierre"
 ];
 
