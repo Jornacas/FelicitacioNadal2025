@@ -95,6 +95,15 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     return saved ? parseInt(saved) : 0;
   });
   const [isMoving, setIsMoving] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // PANG arcade music
   usePangMusic(musicEnabled && gamePhase === 'playing');
@@ -1098,7 +1107,8 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
 
       // Update player sprite position (use percentage for responsive scaling)
       if (playerSpriteRef.current) {
-        const xPercent = ((playerXRef.current - 20) / CANVAS_WIDTH) * 100;
+        const spriteOffset = window.innerWidth < 640 ? 20 : 35;
+        const xPercent = ((playerXRef.current - spriteOffset) / CANVAS_WIDTH) * 100;
         playerSpriteRef.current.style.left = `${xPercent}%`;
       }
 
@@ -1306,13 +1316,13 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
             ref={playerSpriteRef}
             className="absolute pointer-events-none"
             style={{
-              bottom: `${((CANVAS_HEIGHT - GROUND_Y - 5) / CANVAS_HEIGHT) * 100}%`,
-              left: `${((CANVAS_WIDTH / 2 - 20) / CANVAS_WIDTH) * 100}%`,
+              bottom: `${((CANVAS_HEIGHT - GROUND_Y - (isMobile ? 3 : 6)) / CANVAS_HEIGHT) * 100}%`,
+              left: `${((CANVAS_WIDTH / 2 - (isMobile ? 20 : 35)) / CANVAS_WIDTH) * 100}%`,
             }}
           >
             <PixelSprite
               config={selectedCharacter}
-              size={40}
+              size={isMobile ? 40 : 70}
               direction="back"
               pose={isMoving ? 'walking' : 'standing'}
               showLabel={false}
