@@ -9,6 +9,7 @@ interface PixelSpriteProps {
   pose?: SpritePose;
   giftIndex?: number;
   showGift?: boolean;
+  showLabel?: boolean;
 }
 
 const PixelSprite: React.FC<PixelSpriteProps> = ({
@@ -17,7 +18,8 @@ const PixelSprite: React.FC<PixelSpriteProps> = ({
   direction = 'front',
   pose = 'standing',
   giftIndex = 0,
-  showGift = false
+  showGift = false,
+  showLabel = true
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -166,6 +168,74 @@ const PixelSprite: React.FC<PixelSpriteProps> = ({
         drawRect(cx - 1, legTop + 5, 3, 1, '#222222');
         drawRect(cx + 1, legTop + 5, 3, 1, '#222222');
 
+      } else if (direction === 'back') {
+        // ============ BACK VIEW ============
+
+        // Hair (from behind)
+        const hairTop = startY;
+        if (hairType === 'thinning') {
+          drawRect(cx - 3, hairTop, 6, 3, hColor);
+          drawRect(cx - 2, hairTop + 3, 4, 2, hColor);
+        } else if (hairType === 'curly' || hairType === 'curly-long') {
+          drawRect(cx - 4, hairTop, 8, 4, hColor);
+          drawRect(cx - 5, hairTop + 2, 2, 5, hColor);
+          drawRect(cx + 3, hairTop + 2, 2, 5, hColor);
+          drawPixel(cx - 6, hairTop + 3, hColor);
+          drawPixel(cx + 5, hairTop + 3, hColor);
+          drawPixel(cx - 6, hairTop + 5, hColor);
+          drawPixel(cx + 5, hairTop + 5, hColor);
+          if (hairType === 'curly-long') {
+            drawRect(cx - 5, hairTop + 7, 2, 5, hColor);
+            drawRect(cx + 3, hairTop + 7, 2, 5, hColor);
+            drawPixel(cx - 6, hairTop + 8, hColor);
+            drawPixel(cx + 5, hairTop + 8, hColor);
+            drawPixel(cx - 6, hairTop + 10, hColor);
+            drawPixel(cx + 5, hairTop + 10, hColor);
+          }
+        } else if (hairType === 'long') {
+          drawRect(cx - 4, hairTop, 8, 3, hColor);
+          drawRect(cx - 5, hairTop + 2, 2, 10, hColor);
+          drawRect(cx + 3, hairTop + 2, 2, 10, hColor);
+          drawRect(cx - 3, hairTop + 3, 6, 8, hColor);
+        } else if (hairType === 'bob') {
+          drawRect(cx - 4, hairTop, 8, 4, hColor);
+          drawRect(cx - 5, hairTop + 2, 2, 5, hColor);
+          drawRect(cx + 3, hairTop + 2, 2, 5, hColor);
+        } else {
+          // Normal hair from back
+          drawRect(cx - 4, hairTop, 8, 4, hColor);
+          drawRect(cx - 3, hairTop + 4, 6, 2, hColor);
+        }
+
+        // Head back (no face visible)
+        const headTop = startY + 2;
+        drawRect(cx - 3, headTop + 2, 6, 4, sColor);
+
+        // Body back
+        const bodyTop = headTop + 6;
+        drawRect(cx - 3, bodyTop, 6, 5, tColor);
+
+        // Arms back
+        const armSwing = pose === 'walking' ? Math.sin(time / 150) * 2 : 0;
+        drawRect(cx - 5, bodyTop + armSwing, 2, 4, sColor);
+        drawRect(cx + 3, bodyTop - armSwing, 2, 4, sColor);
+
+        // Legs back (walking animation)
+        const legTop = bodyTop + 5;
+        if (pose === 'walking') {
+          const leg1 = walkCycle < 2 ? 1 : -1;
+          const leg2 = walkCycle < 2 ? -1 : 1;
+          drawRect(cx - 3, legTop + leg1, 2, 5, lColor);
+          drawRect(cx + 1, legTop + leg2, 2, 5, lColor);
+        } else {
+          drawRect(cx - 3, legTop, 2, 5, lColor);
+          drawRect(cx + 1, legTop, 2, 5, lColor);
+        }
+
+        // Shoes
+        drawRect(cx - 4, legTop + 5, 3, 1, '#222222');
+        drawRect(cx + 1, legTop + 5, 3, 1, '#222222');
+
       } else {
         // ============ FRONT VIEW ============
 
@@ -306,10 +376,14 @@ const PixelSprite: React.FC<PixelSpriteProps> = ({
         className="relative z-10"
         style={{ imageRendering: 'pixelated' }}
       />
-      <div className="bg-black/40 rounded-full blur-sm w-6 h-1 -mt-1"></div>
-      <div className="mt-0 bg-yellow-400 text-black px-2 py-0.5 font-bold text-[8px] border border-black shadow-[1px_1px_0px_#000] uppercase">
-        {config.name}
-      </div>
+      {showLabel && (
+        <>
+          <div className="bg-black/40 rounded-full blur-sm w-6 h-1 -mt-1"></div>
+          <div className="mt-0 bg-yellow-400 text-black px-2 py-0.5 font-bold text-[8px] border border-black shadow-[1px_1px_0px_#000] uppercase">
+            {config.name}
+          </div>
+        </>
+      )}
     </div>
   );
 };

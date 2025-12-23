@@ -10,11 +10,11 @@ const CHARACTER_DATA: { [key: string]: { objects: ObjectType[], description: str
     objects: ['scratch-motion', 'scratch-looks', 'scratch-sound', 'scratch-events', 'scratch-control', 'scratch-cat']
   },
   'Lucia': {
-    description: 'Activitats Infantils',
+    description: 'Tecnologia Infantil',
     objects: ['gear-big', 'gear-medium', 'gear-small', 'gear-colored']
   },
   'Laura': {
-    description: 'JumpingClay',
+    description: 'Coordinació Art',
     objects: ['clay-red', 'clay-blue', 'clay-yellow', 'clay-green']
   },
   'Lidia': {
@@ -82,6 +82,7 @@ const BALL_SIZES = {
 
 const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const playerSpriteRef = useRef<HTMLDivElement>(null);
   const [gamePhase, setGamePhase] = useState<'select' | 'playing' | 'gameover' | 'win'>('select');
   const [selectedCharacter, setSelectedCharacter] = useState<SpriteConfig | null>(null);
   const [score, setScore] = useState(0);
@@ -92,6 +93,7 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     const saved = localStorage.getItem('pangHighScore');
     return saved ? parseInt(saved) : 0;
   });
+  const [isMoving, setIsMoving] = useState(false);
 
   // PANG arcade music
   usePangMusic(musicEnabled && gamePhase === 'playing');
@@ -110,6 +112,14 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const activeOscillatorsRef = useRef<OscillatorNode[]>([]);
   const canPlaySoundRef = useRef(true);
+
+  // Refs for game loop (to avoid re-running effect on state changes)
+  const scoreRef = useRef(0);
+  const livesRef = useRef(3);
+
+  // Sync refs with state
+  useEffect(() => { scoreRef.current = score; }, [score]);
+  useEffect(() => { livesRef.current = lives; }, [lives]);
 
   // Stop all sounds immediately
   const stopAllSounds = useCallback(() => {
@@ -625,18 +635,23 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
   // Track objects to destroy per level
   const objectsToDestroyRef = useRef(0);
   const objectsDestroyedRef = useRef(0);
+  const maxSimultaneousRef = useRef(1);
 
-  // Spawn a single new object
+  // Spawn a new object
   const spawnObject = useCallback(() => {
     if (!selectedCharacter) return;
+    if (ballsRef.current.length >= maxSimultaneousRef.current) return;
 
     const charData = CHARACTER_DATA[selectedCharacter.name];
     const objectType = charData.objects[Math.floor(Math.random() * charData.objects.length)];
 
+    // Spawn at random X position, avoiding edges
+    const spawnX = 80 + Math.random() * (CANVAS_WIDTH - 160);
+
     ballsRef.current.push({
       id: ballIdRef.current++,
-      x: 100 + Math.random() * (CANVAS_WIDTH - 200),
-      y: 50,
+      x: spawnX,
+      y: 30,
       vx: (Math.random() > 0.5 ? 1 : -1) * HORIZONTAL_SPEED,
       vy: 0,
       size: 'large',
@@ -644,16 +659,26 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     });
   }, [selectedCharacter]);
 
-  // Initialize level - only spawn ONE object
+  // Initialize level with progressive difficulty
   const initLevel = useCallback((lvl: number) => {
     if (!selectedCharacter) return;
 
     ballsRef.current = [];
-    objectsToDestroyRef.current = lvl + 2;  // Level 1 = 3 objects, Level 2 = 4, etc.
+
+    // Progressive difficulty:
+    // Level 1: 3 objects total, 1 at a time
+    // Level 2: 4 objects total, 1 at a time
+    // Level 3: 5 objects total, 2 at a time
+    // Level 4: 6 objects total, 2 at a time
+    // Level 5: 7 objects total, 3 at a time
+    objectsToDestroyRef.current = lvl + 2;
+    maxSimultaneousRef.current = Math.min(Math.floor((lvl + 1) / 2) + 1, 3);
     objectsDestroyedRef.current = 0;
 
-    // Spawn first object
-    spawnObject();
+    // Spawn initial objects based on level
+    for (let i = 0; i < maxSimultaneousRef.current; i++) {
+      setTimeout(() => spawnObject(), i * 300);
+    }
   }, [selectedCharacter, spawnObject]);
 
   // Start game
@@ -668,7 +693,7 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     setGamePhase('playing');
   }, []);
 
-  // Handle object destruction - no splitting, just spawn new if needed
+  // Handle object destruction - spawn new if needed
   const handleObjectDestroyed = useCallback(() => {
     objectsDestroyedRef.current++;
 
@@ -677,12 +702,12 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
       return 'level_complete';
     }
 
-    // Spawn next object after a short delay
+    // Spawn next object after a short delay if below max
     setTimeout(() => {
-      if (ballsRef.current.length === 0) {
+      if (ballsRef.current.length < maxSimultaneousRef.current) {
         spawnObject();
       }
-    }, 500);
+    }, 400);
 
     return 'continue';
   }, [spawnObject]);
@@ -720,12 +745,14 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
 
       // Move player
       const speed = 5;
+      const wasMoving = keysRef.current.left || keysRef.current.right;
       if (keysRef.current.left) {
         playerXRef.current = Math.max(PLAYER_WIDTH / 2 + 10, playerXRef.current - speed);
       }
       if (keysRef.current.right) {
         playerXRef.current = Math.min(CANVAS_WIDTH - PLAYER_WIDTH / 2 - 10, playerXRef.current + speed);
       }
+      setIsMoving(wasMoving);
 
       // Shoot
       if (keysRef.current.shoot && canShootRef.current && harpoonsRef.current.length < 2) {
@@ -766,10 +793,13 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
       });
 
       // Update balls
-      let newBalls: Ball[] = [];
       let ballsToRemove: number[] = [];
+      let harpoonsToRemove: number[] = [];
 
       ballsRef.current.forEach(ball => {
+        // Skip if already marked for removal
+        if (ballsToRemove.includes(ball.id)) return;
+
         // Apply gravity with speed cap (PANG-style physics)
         ball.vy += GRAVITY;
         // Cap falling speed to prevent acceleration
@@ -802,34 +832,52 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
           ball.vy = Math.abs(ball.vy) * 0.5;  // Gentle ceiling bounce
         }
 
-        // Check collision with harpoons
-        harpoonsRef.current.forEach((harpoon, hIndex) => {
-          const dx = ball.x - harpoon.x;
-          const dy = ball.y - harpoon.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+        // Check collision with harpoons (check entire harpoon line, not just tip)
+        for (let hIndex = 0; hIndex < harpoonsRef.current.length; hIndex++) {
+          const harpoon = harpoonsRef.current[hIndex];
 
-          if (distance < radius + 5) {
-            ballsToRemove.push(ball.id);
-            harpoonsRef.current.splice(hIndex, 1);
-            setScore(prev => prev + BALL_SIZES[ball.size].points * 2);  // More points since no splitting
-            playSound('pop');
+          // Skip harpoons already marked for removal
+          if (harpoonsToRemove.includes(harpoon.id)) continue;
 
-            // Handle destruction and check level completion
-            const result = handleObjectDestroyed();
-            if (result === 'level_complete') {
-              playSound('levelup');
-              setLevel(prev => {
-                const newLevel = prev + 1;
-                if (newLevel > 5) {
-                  setGamePhase('win');
-                  return prev;
-                }
-                setTimeout(() => initLevel(newLevel), 1000);
-                return newLevel;
-              });
+          // Check if ball intersects the harpoon LINE (from player to tip)
+          // Harpoon is a vertical line at harpoon.x from GROUND_Y - PLAYER_HEIGHT to harpoon.y
+          const harpoonTop = harpoon.y;
+          const harpoonBottom = GROUND_Y - PLAYER_HEIGHT;
+
+          // Check horizontal distance
+          const dx = Math.abs(ball.x - harpoon.x);
+
+          // Check if ball's X overlaps with harpoon line
+          if (dx < radius + 3) {
+            // Check if ball's Y overlaps with harpoon line segment
+            const ballTop = ball.y - radius;
+            const ballBottom = ball.y + radius;
+
+            if (ballBottom >= harpoonTop && ballTop <= harpoonBottom) {
+              // Collision! Mark for removal
+              ballsToRemove.push(ball.id);
+              harpoonsToRemove.push(harpoon.id);
+              setScore(prev => prev + BALL_SIZES[ball.size].points * 2);
+              playSound('pop');
+
+              // Handle destruction and check level completion
+              const result = handleObjectDestroyed();
+              if (result === 'level_complete') {
+                playSound('levelup');
+                setLevel(prev => {
+                  const newLevel = prev + 1;
+                  if (newLevel > 5) {
+                    setGamePhase('win');
+                    return prev;
+                  }
+                  setTimeout(() => initLevel(newLevel), 1000);
+                  return newLevel;
+                });
+              }
+              break; // This ball is destroyed, stop checking harpoons
             }
           }
-        });
+        }
 
         // Check collision with player (only if not already hit this frame)
         if (!ballsToRemove.includes(ball.id)) {
@@ -872,26 +920,22 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         drawObject(ctx, ball);
       });
 
-      // Remove hit balls
+      // Remove hit balls and harpoons
       ballsRef.current = ballsRef.current.filter(b => !ballsToRemove.includes(b.id));
+      harpoonsRef.current = harpoonsRef.current.filter(h => !harpoonsToRemove.includes(h.id));
 
-      // Draw player (simple representation using character colors)
-      const playerY = GROUND_Y - PLAYER_HEIGHT;
-      ctx.fillStyle = '#4ECDC4';
-      ctx.fillRect(playerXRef.current - PLAYER_WIDTH / 2, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
+      // Update player sprite position (use percentage for responsive scaling)
+      if (playerSpriteRef.current) {
+        const xPercent = ((playerXRef.current - 30) / CANVAS_WIDTH) * 100;
+        playerSpriteRef.current.style.left = `${xPercent}%`;
+      }
 
-      // Player head
-      ctx.fillStyle = '#FFE4C4';
-      ctx.beginPath();
-      ctx.arc(playerXRef.current, playerY - 5, 12, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Draw UI
+      // Draw UI (use refs to avoid re-running effect on state changes)
       ctx.fillStyle = '#FFD700';
       ctx.font = 'bold 20px monospace';
-      ctx.fillText(`PUNTS: ${score}`, 20, 30);
+      ctx.fillText(`PUNTS: ${scoreRef.current}`, 20, 30);
       ctx.fillText(`NIVELL: ${level}`, CANVAS_WIDTH / 2 - 50, 30);
-      ctx.fillText(`VIDES: ${'❤️'.repeat(lives)}`, CANVAS_WIDTH - 150, 30);
+      ctx.fillText(`VIDES: ${'❤️'.repeat(livesRef.current)}`, CANVAS_WIDTH - 150, 30);
 
       } catch (error) {
         console.error('Game loop error:', error);
@@ -911,7 +955,8 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gamePhase, selectedCharacter, level, initLevel, drawObject, handleObjectDestroyed, playSound, stopAllSounds, spawnObject, score, lives]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gamePhase, selectedCharacter, level, initLevel, drawObject, handleObjectDestroyed, playSound, stopAllSounds, spawnObject]);
 
   // Keyboard controls
   useEffect(() => {
@@ -1075,13 +1120,34 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
   // Playing screen
   return (
     <div className="flex flex-col items-center">
-      <canvas
-        ref={canvasRef}
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-        className="border-4 border-yellow-400 bg-[#1a1a2e]"
-        style={{ maxWidth: '100%', height: 'auto' }}
-      />
+      <div className="relative" style={{ maxWidth: '100%' }}>
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          className="border-4 border-yellow-400 bg-[#1a1a2e]"
+          style={{ maxWidth: '100%', height: 'auto' }}
+        />
+        {/* Player sprite overlay */}
+        {selectedCharacter && (
+          <div
+            ref={playerSpriteRef}
+            className="absolute pointer-events-none"
+            style={{
+              bottom: `${((CANVAS_HEIGHT - GROUND_Y) / CANVAS_HEIGHT) * 100}%`,
+              left: `${((CANVAS_WIDTH / 2 - 30) / CANVAS_WIDTH) * 100}%`,
+            }}
+          >
+            <PixelSprite
+              config={selectedCharacter}
+              size={60}
+              direction="back"
+              pose={isMoving ? 'walking' : 'standing'}
+              showLabel={false}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Touch controls */}
       <div className="flex justify-between w-full max-w-[850px] mt-2 px-2 sm:hidden">

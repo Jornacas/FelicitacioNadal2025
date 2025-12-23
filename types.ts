@@ -11,7 +11,7 @@ export interface SpriteConfig {
   hairType?: 'normal' | 'thinning' | 'curly' | 'long' | 'curly-long' | 'bob';
 }
 
-export type SpriteDirection = 'side' | 'front';
+export type SpriteDirection = 'side' | 'front' | 'back';
 export type SpritePose = 'walking' | 'standing' | 'waving' | 'holding-gift';
 
 export const GIFT_COLORS = ['#FF0000', '#00AA00', '#0066FF', '#FF00FF', '#FFAA00', '#00AAAA'];
