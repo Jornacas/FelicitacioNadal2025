@@ -148,24 +148,26 @@ const App: React.FC = () => {
   const [staff, setStaff] = useState<SpriteConfig[]>(DEFAULT_STAFF);
   const [storyStep, setStoryStep] = useState(0);
   const [musicEnabled, setMusicEnabled] = useState(false);
-  const [canvasSize, setCanvasSize] = useState({ width: 850, height: 520 });
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
-  // Responsive canvas sizing
+  // Responsive scaling - siempre usar canvas fijo y escalar con CSS
+  const [scale, setScale] = useState(1);
+
   useEffect(() => {
-    const updateSize = () => {
-      const width = Math.min(window.innerWidth - 16, 850);
-      // En landscape móvil, usar más altura disponible
-      const availableHeight = window.innerHeight - 100;
-      const height = Math.min(availableHeight, 520);
-      setCanvasSize({ width: Math.max(width, 300), height: Math.max(height, 280) });
+    const updateScale = () => {
+      const containerWidth = window.innerWidth - 20;
+      const containerHeight = window.innerHeight - 120;
+      const scaleX = containerWidth / 850;
+      const scaleY = containerHeight / 520;
+      const newScale = Math.min(scaleX, scaleY, 1); // nunca más grande que 1
+      setScale(newScale);
     };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    window.addEventListener('orientationchange', () => setTimeout(updateSize, 100));
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    window.addEventListener('orientationchange', () => setTimeout(updateScale, 150));
     return () => {
-      window.removeEventListener('resize', updateSize);
-      window.removeEventListener('orientationchange', updateSize);
+      window.removeEventListener('resize', updateScale);
+      window.removeEventListener('orientationchange', updateScale);
     };
   }, []);
 
@@ -237,11 +239,16 @@ const App: React.FC = () => {
       )}
 
       {gameState === GameState.GAME && (
-        <div className="flex flex-col">
+        <div className="flex flex-col items-center">
           <div
             ref={gameContainerRef}
-            className="relative w-full overflow-hidden bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] border-4 sm:border-8 border-b-0 border-yellow-400 shadow-2xl"
-            style={{ height: canvasSize.height }}
+            className="relative overflow-hidden bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] border-4 border-b-0 border-yellow-400 shadow-2xl origin-top"
+            style={{
+              width: 850,
+              height: 520,
+              transform: `scale(${scale})`,
+              marginBottom: (520 * scale - 520) + 'px'
+            }}
           >
             {/* Christmas Lights at top */}
             <ChristmasLights />
@@ -269,8 +276,8 @@ const App: React.FC = () => {
             {/* UNIFIED GAME CANVAS - Tree and Characters all in one */}
             <div className="absolute inset-0 flex items-end justify-center">
               <GameCanvas
-                width={canvasSize.width}
-                height={canvasSize.height}
+                width={850}
+                height={520}
                 staff={staff}
                 storyStep={storyStep}
               />
@@ -320,22 +327,29 @@ const App: React.FC = () => {
 
           </div>
 
-          {/* Control bar - outside the game canvas */}
-          <div className="flex justify-between items-center px-2 sm:px-4 py-2 bg-black border-4 sm:border-8 border-t-0 border-yellow-400">
+          {/* Control bar - scaled with the game */}
+          <div
+            className="flex justify-between items-center px-4 py-2 bg-black border-4 border-t-0 border-yellow-400 origin-top"
+            style={{
+              width: 850,
+              transform: `scale(${scale})`,
+              marginBottom: (50 * scale - 50) + 'px'
+            }}
+          >
             <button
               onClick={() => setMusicEnabled(!musicEnabled)}
-              className={`px-2 sm:px-4 py-1 sm:py-2 text-[10px] sm:text-xs border-2 transition-all font-bold hover:scale-105 ${
+              className={`px-4 py-2 text-xs border-2 transition-all font-bold hover:scale-105 ${
                 musicEnabled
                   ? 'bg-green-600 text-white border-green-400 hover:bg-green-500'
                   : 'bg-gray-800 text-white border-yellow-400/50 hover:bg-yellow-700'
               }`}
             >
-              {musicEnabled ? '🎵 ON' : '🔇 OFF'}
+              {musicEnabled ? '🎵 MÚSICA ON' : '🔇 MÚSICA OFF'}
             </button>
 
             <button
               onClick={() => setGameState(GameState.MENU)}
-              className="bg-gray-800 text-white px-2 sm:px-4 py-1 sm:py-2 text-[10px] sm:text-xs border-2 border-yellow-400/50 hover:bg-red-700 hover:border-red-400 transition-all font-bold hover:scale-105"
+              className="bg-gray-800 text-white px-4 py-2 text-xs border-2 border-yellow-400/50 hover:bg-red-700 hover:border-red-400 transition-all font-bold hover:scale-105"
             >
               ⏭ SALTAR
             </button>
