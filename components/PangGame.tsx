@@ -1301,7 +1301,7 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
             ref={playerSpriteRef}
             className="absolute pointer-events-none"
             style={{
-              bottom: `${((CANVAS_HEIGHT - GROUND_Y) / CANVAS_HEIGHT) * 100}%`,
+              bottom: `${((CANVAS_HEIGHT - GROUND_Y - 8) / CANVAS_HEIGHT) * 100}%`,
               left: `${((CANVAS_WIDTH / 2 - 30) / CANVAS_WIDTH) * 100}%`,
             }}
           >
