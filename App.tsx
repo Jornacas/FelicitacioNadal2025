@@ -155,12 +155,18 @@ const App: React.FC = () => {
   useEffect(() => {
     const updateSize = () => {
       const width = Math.min(window.innerWidth - 16, 850);
-      const height = Math.min(window.innerHeight - 150, 520);
-      setCanvasSize({ width, height });
+      // En landscape móvil, usar más altura disponible
+      const availableHeight = window.innerHeight - 100;
+      const height = Math.min(availableHeight, 520);
+      setCanvasSize({ width: Math.max(width, 300), height: Math.max(height, 280) });
     };
     updateSize();
     window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener('orientationchange', () => setTimeout(updateSize, 100));
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('orientationchange', updateSize);
+    };
   }, []);
 
   // Christmas music - "A Betlem m'en vull anar"
