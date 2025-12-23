@@ -243,10 +243,10 @@ const App: React.FC = () => {
             </div>
 
             {/* UNIFIED GAME CANVAS - Tree and Characters all in one */}
-            <div className="absolute inset-0 flex items-end justify-center pb-8">
+            <div className="absolute inset-0 flex items-end justify-center">
               <GameCanvas
                 width={850}
-                height={420}
+                height={520}
                 staff={staff}
                 storyStep={storyStep}
               />
