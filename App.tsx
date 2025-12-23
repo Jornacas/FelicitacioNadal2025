@@ -262,6 +262,43 @@ const App: React.FC = () => {
   if (isLandscape && gameState === GameState.GAME) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center overflow-hidden">
+        {/* Controls OUTSIDE the scaled container so they're always visible */}
+        <button
+          onClick={() => setMusicEnabled(!musicEnabled)}
+          className={`fixed top-2 left-2 w-10 h-10 flex items-center justify-center text-lg font-bold z-50 rounded ${musicEnabled ? 'bg-green-600 text-white' : 'bg-black/80 text-yellow-400 border border-yellow-400'}`}
+        >
+          {musicEnabled ? '🎵' : '🔇'}
+        </button>
+        <button
+          onClick={() => setGameState(GameState.MENU)}
+          className="fixed top-2 right-2 w-10 h-10 flex items-center justify-center bg-black/80 text-yellow-400 border border-yellow-400 text-lg font-bold z-50 rounded"
+        >
+          ✕
+        </button>
+
+        {/* Banner OUTSIDE the scaled container */}
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-red-800 via-red-700 to-red-800 border-t-2 border-yellow-400 overflow-hidden h-6 flex items-center z-50">
+          <div className="animate-marquee whitespace-nowrap flex">
+            <span className="text-yellow-300 text-xs font-bold mx-4">
+              {" ★ GRÀCIES MONITORS ★ " + MONITORS.slice(0, 10).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(10, 20).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(20, 30).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(30).join(" ✦ ") + " ✦ "}
+            </span>
+            <span className="text-yellow-300 text-xs font-bold mx-4">
+              {" ★ GRÀCIES MONITORS ★ " + MONITORS.slice(0, 10).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(10, 20).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(20, 30).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(30).join(" ✦ ") + " ✦ "}
+            </span>
+          </div>
+        </div>
+
+        {/* CSS for marquee animation */}
+        <style>{`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-marquee {
+            animation: marquee 45s linear infinite;
+          }
+        `}</style>
+
         <div
           ref={gameContainerRef}
           className="relative overflow-hidden origin-center"
@@ -298,8 +335,6 @@ const App: React.FC = () => {
             <GameCanvas width={850} height={520} staff={staff} storyStep={storyStep} />
           </div>
 
-          <MonitorsBanner />
-
           {/* Final overlay */}
           {storyStep >= 1550 && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/95 z-50">
@@ -314,20 +349,6 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/* Minimal controls - corners */}
-          <button
-            onClick={() => setMusicEnabled(!musicEnabled)}
-            className={`absolute top-2 left-2 w-8 h-8 flex items-center justify-center text-sm font-bold z-40 ${musicEnabled ? 'bg-green-600 text-white' : 'bg-black/60 text-yellow-400'}`}
-          >
-            {musicEnabled ? '🎵' : '🔇'}
-          </button>
-          <button
-            onClick={() => setGameState(GameState.MENU)}
-            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-black/60 text-yellow-400 text-sm font-bold z-40"
-          >
-            ✕
-          </button>
         </div>
       </div>
     );
@@ -337,6 +358,32 @@ const App: React.FC = () => {
   if (isMobile && gameState === GameState.GAME) {
     return (
       <div className="fixed inset-0 bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] flex flex-col items-center justify-center">
+        {/* Controls OUTSIDE the scaled container */}
+        <button
+          onClick={() => setMusicEnabled(!musicEnabled)}
+          className={`fixed top-2 left-2 w-10 h-10 flex items-center justify-center text-lg font-bold z-50 rounded ${musicEnabled ? 'bg-green-600 text-white' : 'bg-black/80 text-yellow-400 border border-yellow-400'}`}
+        >
+          {musicEnabled ? '🎵' : '🔇'}
+        </button>
+        <button
+          onClick={() => setGameState(GameState.MENU)}
+          className="fixed top-2 right-2 w-10 h-10 flex items-center justify-center bg-black/80 text-yellow-400 border border-yellow-400 text-lg font-bold z-50 rounded"
+        >
+          ✕
+        </button>
+
+        {/* Banner OUTSIDE the scaled container */}
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-red-800 via-red-700 to-red-800 border-t-2 border-yellow-400 overflow-hidden h-6 flex items-center z-50">
+          <div className="animate-marquee whitespace-nowrap flex">
+            <span className="text-yellow-300 text-xs font-bold mx-4">
+              {" ★ GRÀCIES MONITORS ★ " + MONITORS.slice(0, 10).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(10, 20).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(20, 30).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(30).join(" ✦ ") + " ✦ "}
+            </span>
+            <span className="text-yellow-300 text-xs font-bold mx-4">
+              {" ★ GRÀCIES MONITORS ★ " + MONITORS.slice(0, 10).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(10, 20).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(20, 30).join(" ✦ ") + " ★ GRÀCIES MONITORS ★ " + MONITORS.slice(30).join(" ✦ ") + " ✦ "}
+            </span>
+          </div>
+        </div>
+
         <div
           ref={gameContainerRef}
           className="relative overflow-hidden origin-center"
@@ -364,12 +411,9 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          <div className="absolute inset-0 flex items-end justify-center pb-6">
+          <div className="absolute inset-0 flex items-end justify-center">
             <GameCanvas width={850} height={520} staff={staff} storyStep={storyStep} />
           </div>
-
-          {/* Monitors banner */}
-          <MonitorsBanner />
 
           {/* Narrative UI - compact for mobile */}
           <div className="absolute top-2 w-full flex justify-center px-2 z-40">
@@ -399,23 +443,18 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/* Controls - bottom */}
-          <div className="absolute bottom-8 left-2 right-2 flex justify-between z-40">
-            <button
-              onClick={() => setMusicEnabled(!musicEnabled)}
-              className={`px-2 py-1 text-[10px] font-bold ${musicEnabled ? 'bg-green-600 text-white' : 'bg-black/80 text-yellow-400 border border-yellow-400'}`}
-            >
-              {musicEnabled ? '🎵' : '🔇'}
-            </button>
-            <button
-              onClick={() => setGameState(GameState.MENU)}
-              className="bg-black/80 text-yellow-400 border border-yellow-400 px-2 py-1 text-[10px] font-bold"
-            >
-              ✕
-            </button>
-          </div>
         </div>
+
+        {/* CSS for marquee animation */}
+        <style>{`
+          @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-marquee {
+            animation: marquee 45s linear infinite;
+          }
+        `}</style>
       </div>
     );
   }
