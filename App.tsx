@@ -7,14 +7,14 @@ import { SpriteConfig, GameState } from './types';
 import { useChristmasMusic } from './hooks/useChristmasMusic';
 
 const MONITORS = [
-  "Leo Argento", "Georgina Carreras", "Enric Chueca", "Ester Palau", "Unai Ruiz",
-  "Zoe Javierre", "Ignasi Julia", "Anna Bitlloch", "Joel Plaza", "Maria Ileana",
-  "Judit Pesquero", "Miriam Miranda", "Laura Santander", "Gloria Sanchez", "Laia Lopez",
-  "Lorena Vega", "Paula Lucas", "Alexandra Gae", "Javier Cabezas", "Marina Gomez",
-  "Claudia Caracuel", "Ariadna Puigdemasa", "Gemma Duran", "Jordi Bonet", "David Illarreta",
-  "Didac Pardo", "Maria Torner", "Karim ElBair", "Youssef Bendahmane", "Sanny Paredes",
-  "Carla Mayo", "Paola Belmonte", "Erik Silva", "Natalia Lozada", "Marta Cisneros",
-  "Gemma Prunes", "Jaume Bernabeu", "Nuria Sanchez"
+  "Alexandra Gae", "Anna Bitlloch", "Ariadna Puigdemasa", "Carla Mayo", "Claudia Caracuel",
+  "David Illarreta", "Didac Pardo", "Enric Chueca", "Erik Silva", "Ester Palau",
+  "Gemma Duran", "Gemma Prunes", "Georgina Carreras", "Gloria Sanchez", "Ignasi Julia",
+  "Jaume Bernabeu", "Javier Cabezas", "Joel Plaza", "Jordi Bonet", "Judit Pesquero",
+  "Karim ElBair", "Laia Lopez", "Laura Santander", "Leo Argento", "Lorena Vega",
+  "Maria Ileana", "Maria Torner", "Marina Gomez", "Marta Cisneros", "Miriam Miranda",
+  "Natalia Lozada", "Nuria Sanchez", "Paola Belmonte", "Paula Lucas", "Sanny Paredes",
+  "Unai Ruiz", "Youssef Bendahmane", "Zoe Javierre"
 ];
 
 const DEFAULT_STAFF: SpriteConfig[] = [
@@ -79,7 +79,17 @@ const Snowfall: React.FC = () => {
 
 // Scrolling banner with monitor names
 const MonitorsBanner: React.FC = () => {
-  const text = "★ GRÀCIES ALS NOSTRES MONITORS ★ " + MONITORS.join(" ✦ ") + " ★ ";
+  // Insert thank you phrase every 10 monitors
+  const thanksPhrase = " ★ GRÀCIES MONITORS ★ ";
+  const monitorsWithThanks = MONITORS.reduce((acc: string[], name, idx) => {
+    acc.push(name);
+    if ((idx + 1) % 10 === 0 && idx < MONITORS.length - 1) {
+      acc.push(thanksPhrase);
+    }
+    return acc;
+  }, []);
+  const text = thanksPhrase + monitorsWithThanks.join(" ✦ ") + " ✦ ";
+
   return (
     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-red-800 via-red-700 to-red-800 border-t-2 border-yellow-400 overflow-hidden h-6 flex items-center z-30">
       <div className="animate-marquee whitespace-nowrap flex">
@@ -565,7 +575,7 @@ const App: React.FC = () => {
           100% { transform: translateX(-50%); }
         }
         .animate-marquee {
-          animation: marquee 30s linear infinite;
+          animation: marquee 45s linear infinite;
         }
       `}</style>
     </RetroInterface>
