@@ -530,47 +530,113 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         ctx.fillText('KG', 0, radius * 0.3);
         break;
 
-      // ANNA - HR Papers
+      // ANNA - HR Papers (més identificables)
       case 'cv-paper':
+        // CV amb foto i text "CV"
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(-radius * 0.7, -radius, radius * 1.4, radius * 2);
-        ctx.fillStyle = '#333';
-        for (let i = 0; i < 5; i++) {
-          ctx.fillRect(-radius * 0.5, -radius * 0.7 + i * radius * 0.35, radius, radius * 0.1);
-        }
+        // Vora del paper
+        ctx.strokeStyle = '#999';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-radius * 0.7, -radius, radius * 1.4, radius * 2);
+        // Foto placeholder (quadrat blau)
         ctx.fillStyle = '#3498DB';
+        ctx.fillRect(-radius * 0.5, -radius * 0.8, radius * 0.5, radius * 0.6);
+        // Silueta persona a la foto
+        ctx.fillStyle = '#FFF';
         ctx.beginPath();
-        ctx.arc(-radius * 0.3, -radius * 0.5, radius * 0.2, 0, Math.PI * 2);
+        ctx.arc(-radius * 0.25, -radius * 0.6, radius * 0.12, 0, Math.PI * 2);
         ctx.fill();
+        ctx.fillRect(-radius * 0.4, -radius * 0.45, radius * 0.3, radius * 0.2);
+        // Text "CV" gran
+        ctx.fillStyle = '#E74C3C';
+        ctx.font = `bold ${radius * 0.5}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('CV', radius * 0.15, -radius * 0.4);
+        // Línies de text
+        ctx.fillStyle = '#666';
+        ctx.fillRect(-radius * 0.5, radius * 0.1, radius, radius * 0.08);
+        ctx.fillRect(-radius * 0.5, radius * 0.35, radius * 0.7, radius * 0.08);
+        ctx.fillRect(-radius * 0.5, radius * 0.6, radius * 0.85, radius * 0.08);
         break;
       case 'cv-folder':
+        // Carpeta taronja amb icona persona
         ctx.fillStyle = '#F39C12';
-        ctx.fillRect(-radius, -radius * 0.8, radius * 2, radius * 1.6);
+        ctx.fillRect(-radius, -radius * 0.7, radius * 2, radius * 1.5);
+        // Pestanya carpeta
         ctx.fillStyle = '#E67E22';
-        ctx.fillRect(-radius, -radius * 0.8, radius * 2, radius * 0.3);
+        ctx.beginPath();
+        ctx.moveTo(-radius, -radius * 0.7);
+        ctx.lineTo(-radius * 0.5, -radius);
+        ctx.lineTo(radius * 0.2, -radius);
+        ctx.lineTo(radius * 0.4, -radius * 0.7);
+        ctx.closePath();
+        ctx.fill();
+        // Icona persona
         ctx.fillStyle = '#FFF';
-        ctx.fillRect(-radius * 0.5, 0, radius, radius * 0.1);
+        ctx.beginPath();
+        ctx.arc(0, -radius * 0.1, radius * 0.25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(-radius * 0.3, radius * 0.2, radius * 0.6, radius * 0.4);
+        // Text "RRHH"
+        ctx.fillStyle = '#8B4513';
+        ctx.font = `bold ${radius * 0.28}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('RRHH', 0, radius * 0.85);
         break;
       case 'cv-stack':
-        ctx.fillStyle = '#ECF0F1';
-        ctx.fillRect(-radius * 0.6, -radius * 0.6, radius * 1.2, radius * 1.4);
-        ctx.fillStyle = '#BDC3C7';
-        ctx.fillRect(-radius * 0.7, -radius * 0.5, radius * 1.2, radius * 1.4);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(-radius * 0.8, -radius * 0.4, radius * 1.2, radius * 1.4);
+        // Pila de papers amb clips
+        ctx.fillStyle = '#DDD';
+        ctx.fillRect(-radius * 0.5, -radius * 0.5, radius * 1.2, radius * 1.3);
+        ctx.fillStyle = '#EEE';
+        ctx.fillRect(-radius * 0.6, -radius * 0.6, radius * 1.2, radius * 1.3);
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(-radius * 0.7, -radius * 0.7, radius * 1.2, radius * 1.3);
+        ctx.strokeStyle = '#999';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-radius * 0.7, -radius * 0.7, radius * 1.2, radius * 1.3);
+        // Clip vermell
+        ctx.fillStyle = '#E74C3C';
+        ctx.fillRect(-radius * 0.75, -radius * 0.5, radius * 0.15, radius * 0.5);
+        ctx.fillRect(-radius * 0.75, -radius * 0.5, radius * 0.3, radius * 0.12);
+        // Número de documents
+        ctx.fillStyle = '#333';
+        ctx.font = `bold ${radius * 0.5}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('x5', radius * 0.1, radius * 0.2);
         break;
       case 'contract':
+        // Contracte amb segell i firma
         ctx.fillStyle = '#FFFEF0';
         ctx.fillRect(-radius * 0.7, -radius, radius * 1.4, radius * 2);
+        ctx.strokeStyle = '#999';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-radius * 0.7, -radius, radius * 1.4, radius * 2);
+        // Títol "CONTRACTE"
+        ctx.fillStyle = '#2C3E50';
+        ctx.font = `bold ${radius * 0.22}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('CONTRACTE', 0, -radius * 0.65);
+        // Línies de text
+        ctx.fillStyle = '#666';
+        ctx.fillRect(-radius * 0.5, -radius * 0.4, radius, radius * 0.06);
+        ctx.fillRect(-radius * 0.5, -radius * 0.2, radius * 0.8, radius * 0.06);
+        ctx.fillRect(-radius * 0.5, 0, radius * 0.9, radius * 0.06);
+        // Segell vermell
         ctx.fillStyle = '#C0392B';
         ctx.beginPath();
-        ctx.arc(0, radius * 0.5, radius * 0.25, 0, Math.PI * 2);
+        ctx.arc(radius * 0.25, radius * 0.5, radius * 0.28, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
+        ctx.fillStyle = '#FFF';
+        ctx.font = `bold ${radius * 0.18}px Arial`;
+        ctx.fillText('OK', radius * 0.25, radius * 0.56);
+        // Firma
+        ctx.strokeStyle = '#1a1a8e';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(-radius * 0.4, radius * 0.2);
-        ctx.quadraticCurveTo(0, radius * 0.5, radius * 0.4, radius * 0.2);
+        ctx.moveTo(-radius * 0.5, radius * 0.5);
+        ctx.quadraticCurveTo(-radius * 0.2, radius * 0.3, 0, radius * 0.5);
+        ctx.quadraticCurveTo(-radius * 0.1, radius * 0.7, -radius * 0.3, radius * 0.6);
         ctx.stroke();
         break;
 
