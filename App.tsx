@@ -217,39 +217,40 @@ const App: React.FC = () => {
       )}
 
       {gameState === GameState.GAME && (
-        <div className="relative h-[550px] w-full overflow-hidden bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] border-8 border-yellow-400 shadow-2xl">
-          {/* Christmas Lights at top */}
-          <ChristmasLights />
+        <div className="flex flex-col">
+          <div className="relative h-[520px] w-full overflow-hidden bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] border-8 border-b-0 border-yellow-400 shadow-2xl">
+            {/* Christmas Lights at top */}
+            <ChristmasLights />
 
-          {/* Snowfall effect */}
-          <Snowfall />
+            {/* Snowfall effect */}
+            <Snowfall />
 
-          {/* Parallax Stars */}
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(50)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute bg-white rounded-full animate-twinkle"
-                style={{
-                  left: `${(i * 17 + i * 3) % 100}%`,
-                  top: `${(i * 13) % 50}%`,
-                  width: `${1 + (i % 3)}px`,
-                  height: `${1 + (i % 3)}px`,
-                  animationDelay: `${i * 0.1}s`
-                }}
+            {/* Parallax Stars */}
+            <div className="absolute inset-0 pointer-events-none">
+              {[...Array(50)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute bg-white rounded-full animate-twinkle"
+                  style={{
+                    left: `${(i * 17 + i * 3) % 100}%`,
+                    top: `${(i * 13) % 50}%`,
+                    width: `${1 + (i % 3)}px`,
+                    height: `${1 + (i % 3)}px`,
+                    animationDelay: `${i * 0.1}s`
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* UNIFIED GAME CANVAS - Tree and Characters all in one */}
+            <div className="absolute inset-0 flex items-end justify-center pb-8">
+              <GameCanvas
+                width={850}
+                height={420}
+                staff={staff}
+                storyStep={storyStep}
               />
-            ))}
-          </div>
-
-          {/* UNIFIED GAME CANVAS - Tree and Characters all in one */}
-          <div className="absolute inset-0 flex items-end justify-center pb-2">
-            <GameCanvas
-              width={850}
-              height={420}
-              staff={staff}
-              storyStep={storyStep}
-            />
-          </div>
+            </div>
 
           {/* Narrative UI */}
           <div className="absolute top-12 w-full flex justify-center px-4 z-40">
@@ -293,24 +294,28 @@ const App: React.FC = () => {
              </div>
           )}
 
-          {/* Music toggle button */}
-          <button
-            onClick={() => setMusicEnabled(!musicEnabled)}
-            className={`absolute bottom-4 left-4 px-4 py-2 text-xs border-2 transition-all font-bold z-30 hover:scale-105 ${
-              musicEnabled
-                ? 'bg-green-600 text-white border-green-400 hover:bg-green-500'
-                : 'bg-black/80 text-white border-yellow-400/50 hover:bg-yellow-700'
-            }`}
-          >
-            {musicEnabled ? '🎵 MÚSICA ON' : '🔇 MÚSICA OFF'}
-          </button>
+          </div>
 
-          <button
-            onClick={() => setGameState(GameState.MENU)}
-            className="absolute bottom-4 right-4 bg-black/80 text-white px-4 py-2 text-xs border-2 border-yellow-400/50 hover:bg-red-700 hover:border-red-400 transition-all font-bold z-30 hover:scale-105"
-          >
-            ⏭ SALTAR-SE
-          </button>
+          {/* Control bar - outside the game canvas */}
+          <div className="flex justify-between items-center px-4 py-2 bg-black border-8 border-t-0 border-yellow-400">
+            <button
+              onClick={() => setMusicEnabled(!musicEnabled)}
+              className={`px-4 py-2 text-xs border-2 transition-all font-bold hover:scale-105 ${
+                musicEnabled
+                  ? 'bg-green-600 text-white border-green-400 hover:bg-green-500'
+                  : 'bg-gray-800 text-white border-yellow-400/50 hover:bg-yellow-700'
+              }`}
+            >
+              {musicEnabled ? '🎵 MÚSICA ON' : '🔇 MÚSICA OFF'}
+            </button>
+
+            <button
+              onClick={() => setGameState(GameState.MENU)}
+              className="bg-gray-800 text-white px-4 py-2 text-xs border-2 border-yellow-400/50 hover:bg-red-700 hover:border-red-400 transition-all font-bold hover:scale-105"
+            >
+              ⏭ SALTAR
+            </button>
+          </div>
         </div>
       )}
 
