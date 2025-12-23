@@ -7,7 +7,7 @@ import { usePangMusic } from '../hooks/usePangMusic';
 const CHARACTER_DATA: { [key: string]: { objects: ObjectType[], description: string } } = {
   'David': {
     description: 'Programació i Robòtica',
-    objects: ['scratch-block', 'scratch-cat', 'scratch-block-yellow', 'scratch-block-purple']
+    objects: ['scratch-motion', 'scratch-looks', 'scratch-sound', 'scratch-events', 'scratch-control', 'scratch-cat']
   },
   'Lucia': {
     description: 'Activitats Infantils',
@@ -32,7 +32,7 @@ const CHARACTER_DATA: { [key: string]: { objects: ObjectType[], description: str
 };
 
 type ObjectType =
-  | 'scratch-block' | 'scratch-cat' | 'scratch-block-yellow' | 'scratch-block-purple'
+  | 'scratch-motion' | 'scratch-looks' | 'scratch-sound' | 'scratch-events' | 'scratch-control' | 'scratch-cat'
   | 'gear-big' | 'gear-medium' | 'gear-small' | 'gear-colored'
   | 'clay-red' | 'clay-blue' | 'clay-yellow' | 'clay-green'
   | 'rock-brown' | 'box-brown' | 'bag-brown' | 'weight-brown'
@@ -65,9 +65,10 @@ const CANVAS_HEIGHT = 480;
 const GROUND_Y = 440;
 const PLAYER_WIDTH = 40;
 const PLAYER_HEIGHT = 50;
-const HARPOON_SPEED = 8;
-const GRAVITY = 0.15;
-const BOUNCE_DAMPING = 0.98;
+const HARPOON_SPEED = 6;
+const GRAVITY = 0.08;  // Reduced gravity for slower falling
+const BOUNCE_DAMPING = 0.95;
+const HORIZONTAL_SPEED = 1.2;  // Slower horizontal movement
 
 const BALL_SIZES = {
   large: { radius: 35, points: 100 },
@@ -105,7 +106,27 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
   // Audio context for PANG sounds
   const audioContextRef = useRef<AudioContext | null>(null);
 
+  // Cleanup audio context when game phase changes
+  useEffect(() => {
+    if (gamePhase !== 'playing' && audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+  }, [gamePhase]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+    };
+  }, []);
+
   const playSound = useCallback((type: 'shoot' | 'pop' | 'hit' | 'levelup') => {
+    if (gamePhase !== 'playing') return;  // Don't play sounds if not playing
+
     if (!audioContextRef.current) {
       audioContextRef.current = new AudioContext();
     }
@@ -152,7 +173,7 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         osc.stop(ctx.currentTime + 0.5);
         break;
     }
-  }, []);
+  }, [gamePhase]);
 
   // Draw pixel art objects
   const drawObject = useCallback((ctx: CanvasRenderingContext2D, ball: Ball) => {
@@ -163,55 +184,138 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     ctx.translate(x, y);
 
     switch (objectType) {
-      // DAVID - Scratch
-      case 'scratch-block':
+      // DAVID - Scratch blocks with authentic colors and shapes
+      case 'scratch-motion':
+        // Motion block - Blue with rounded puzzle shape
         ctx.fillStyle = '#4C97FF';
-        ctx.fillRect(-radius, -radius * 0.6, radius * 2, radius * 1.2);
+        ctx.beginPath();
+        ctx.roundRect(-radius, -radius * 0.5, radius * 2, radius, 8);
+        ctx.fill();
+        // Notch
         ctx.fillStyle = '#3373CC';
-        ctx.fillRect(-radius + 4, -radius * 0.6 + 4, radius * 0.4, radius * 0.4);
+        ctx.beginPath();
+        ctx.arc(-radius * 0.3, -radius * 0.5, radius * 0.15, Math.PI, 0);
+        ctx.fill();
+        // Arrow icon
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = `${radius * 0.5}px Arial`;
-        ctx.fillText('{}', -radius * 0.3, radius * 0.2);
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.3, 0);
+        ctx.lineTo(radius * 0.3, 0);
+        ctx.lineTo(0, -radius * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      case 'scratch-looks':
+        // Looks block - Purple
+        ctx.fillStyle = '#9966FF';
+        ctx.beginPath();
+        ctx.roundRect(-radius, -radius * 0.5, radius * 2, radius, 8);
+        ctx.fill();
+        ctx.fillStyle = '#7744CC';
+        ctx.beginPath();
+        ctx.arc(-radius * 0.3, -radius * 0.5, radius * 0.15, Math.PI, 0);
+        ctx.fill();
+        // Eye icon
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius * 0.35, radius * 0.25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'scratch-sound':
+        // Sound block - Pink/Magenta
+        ctx.fillStyle = '#CF63CF';
+        ctx.beginPath();
+        ctx.roundRect(-radius, -radius * 0.5, radius * 2, radius, 8);
+        ctx.fill();
+        ctx.fillStyle = '#A63CA6';
+        ctx.beginPath();
+        ctx.arc(-radius * 0.3, -radius * 0.5, radius * 0.15, Math.PI, 0);
+        ctx.fill();
+        // Speaker icon
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(-radius * 0.3, -radius * 0.2, radius * 0.25, radius * 0.4);
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.05, -radius * 0.3);
+        ctx.lineTo(radius * 0.3, -radius * 0.4);
+        ctx.lineTo(radius * 0.3, radius * 0.4);
+        ctx.lineTo(-radius * 0.05, radius * 0.3);
+        ctx.fill();
+        break;
+      case 'scratch-events':
+        // Events block - Yellow/Gold with rounded top (hat block)
+        ctx.fillStyle = '#FFBF00';
+        ctx.beginPath();
+        ctx.moveTo(-radius, radius * 0.4);
+        ctx.lineTo(-radius, -radius * 0.2);
+        ctx.quadraticCurveTo(-radius, -radius * 0.6, -radius * 0.5, -radius * 0.6);
+        ctx.lineTo(radius * 0.5, -radius * 0.6);
+        ctx.quadraticCurveTo(radius, -radius * 0.6, radius, -radius * 0.2);
+        ctx.lineTo(radius, radius * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        // Flag icon
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(-radius * 0.1, -radius * 0.3, radius * 0.08, radius * 0.5);
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.02, -radius * 0.3);
+        ctx.lineTo(radius * 0.35, -radius * 0.15);
+        ctx.lineTo(-radius * 0.02, 0);
+        ctx.fill();
+        break;
+      case 'scratch-control':
+        // Control block - Orange with C-shape
+        ctx.fillStyle = '#FFAB19';
+        ctx.beginPath();
+        ctx.roundRect(-radius, -radius * 0.6, radius * 2, radius * 0.5, 6);
+        ctx.fill();
+        ctx.fillRect(-radius, -radius * 0.1, radius * 0.4, radius * 0.7);
+        ctx.beginPath();
+        ctx.roundRect(-radius, radius * 0.3, radius * 2, radius * 0.3, 6);
+        ctx.fill();
+        // Loop icon
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(radius * 0.3, -radius * 0.35, radius * 0.15, 0, Math.PI * 1.5);
+        ctx.stroke();
         break;
       case 'scratch-cat':
+        // Scratch cat face
         ctx.fillStyle = '#FFAB19';
         ctx.beginPath();
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
         ctx.fill();
+        // Ears
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.8, -radius * 0.4);
+        ctx.lineTo(-radius * 0.5, -radius * 1.1);
+        ctx.lineTo(-radius * 0.2, -radius * 0.4);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.8, -radius * 0.4);
+        ctx.lineTo(radius * 0.5, -radius * 1.1);
+        ctx.lineTo(radius * 0.2, -radius * 0.4);
+        ctx.fill();
+        // Eyes
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.arc(-radius * 0.3, -radius * 0.1, radius * 0.25, 0, Math.PI * 2);
-        ctx.arc(radius * 0.3, -radius * 0.1, radius * 0.25, 0, Math.PI * 2);
+        ctx.ellipse(-radius * 0.35, -radius * 0.1, radius * 0.25, radius * 0.3, 0, 0, Math.PI * 2);
+        ctx.ellipse(radius * 0.35, -radius * 0.1, radius * 0.25, radius * 0.3, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#000000';
         ctx.beginPath();
-        ctx.arc(-radius * 0.3, -radius * 0.1, radius * 0.1, 0, Math.PI * 2);
-        ctx.arc(radius * 0.3, -radius * 0.1, radius * 0.1, 0, Math.PI * 2);
+        ctx.arc(-radius * 0.35, -radius * 0.05, radius * 0.12, 0, Math.PI * 2);
+        ctx.arc(radius * 0.35, -radius * 0.05, radius * 0.12, 0, Math.PI * 2);
         ctx.fill();
-        // Ears
-        ctx.fillStyle = '#FFAB19';
+        // Nose
+        ctx.fillStyle = '#CF8A19';
         ctx.beginPath();
-        ctx.moveTo(-radius * 0.7, -radius * 0.5);
-        ctx.lineTo(-radius * 0.4, -radius);
-        ctx.lineTo(-radius * 0.2, -radius * 0.5);
+        ctx.ellipse(0, radius * 0.25, radius * 0.12, radius * 0.08, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(radius * 0.7, -radius * 0.5);
-        ctx.lineTo(radius * 0.4, -radius);
-        ctx.lineTo(radius * 0.2, -radius * 0.5);
-        ctx.fill();
-        break;
-      case 'scratch-block-yellow':
-        ctx.fillStyle = '#FFBF00';
-        ctx.fillRect(-radius, -radius * 0.6, radius * 2, radius * 1.2);
-        ctx.fillStyle = '#CC9900';
-        ctx.fillRect(-radius + 4, -radius * 0.6 + 4, radius * 0.4, radius * 0.4);
-        break;
-      case 'scratch-block-purple':
-        ctx.fillStyle = '#9966FF';
-        ctx.fillRect(-radius, -radius * 0.6, radius * 2, radius * 1.2);
-        ctx.fillStyle = '#7744CC';
-        ctx.fillRect(-radius + 4, -radius * 0.6 + 4, radius * 0.4, radius * 0.4);
         break;
 
       // LUCIA - Gears
@@ -424,27 +528,39 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     ctx.restore();
   }, []);
 
-  // Initialize level
-  const initLevel = useCallback((lvl: number) => {
+  // Track objects to destroy per level
+  const objectsToDestroyRef = useRef(0);
+  const objectsDestroyedRef = useRef(0);
+
+  // Spawn a single new object
+  const spawnObject = useCallback(() => {
     if (!selectedCharacter) return;
 
     const charData = CHARACTER_DATA[selectedCharacter.name];
-    const numBalls = Math.min(lvl, 4);
-    ballsRef.current = [];
+    const objectType = charData.objects[Math.floor(Math.random() * charData.objects.length)];
 
-    for (let i = 0; i < numBalls; i++) {
-      const objectType = charData.objects[i % charData.objects.length];
-      ballsRef.current.push({
-        id: ballIdRef.current++,
-        x: 100 + (i * 200),
-        y: 100,
-        vx: (Math.random() > 0.5 ? 1 : -1) * (2 + lvl * 0.3),
-        vy: 0,
-        size: 'large',
-        objectType
-      });
-    }
+    ballsRef.current.push({
+      id: ballIdRef.current++,
+      x: 100 + Math.random() * (CANVAS_WIDTH - 200),
+      y: 50,
+      vx: (Math.random() > 0.5 ? 1 : -1) * HORIZONTAL_SPEED,
+      vy: 0,
+      size: 'large',
+      objectType
+    });
   }, [selectedCharacter]);
+
+  // Initialize level - only spawn ONE object
+  const initLevel = useCallback((lvl: number) => {
+    if (!selectedCharacter) return;
+
+    ballsRef.current = [];
+    objectsToDestroyRef.current = lvl + 2;  // Level 1 = 3 objects, Level 2 = 4, etc.
+    objectsDestroyedRef.current = 0;
+
+    // Spawn first object
+    spawnObject();
+  }, [selectedCharacter, spawnObject]);
 
   // Start game
   const startGame = useCallback((character: SpriteConfig) => {
@@ -458,37 +574,24 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
     setGamePhase('playing');
   }, []);
 
-  // Split ball into smaller ones
-  const splitBall = useCallback((ball: Ball): Ball[] => {
-    const sizes: ('large' | 'medium' | 'small' | 'tiny')[] = ['large', 'medium', 'small', 'tiny'];
-    const currentIndex = sizes.indexOf(ball.size);
+  // Handle object destruction - no splitting, just spawn new if needed
+  const handleObjectDestroyed = useCallback(() => {
+    objectsDestroyedRef.current++;
 
-    if (currentIndex >= sizes.length - 1) return []; // Tiny balls just disappear
+    // Check if level complete
+    if (objectsDestroyedRef.current >= objectsToDestroyRef.current) {
+      return 'level_complete';
+    }
 
-    const newSize = sizes[currentIndex + 1];
-    const charData = CHARACTER_DATA[selectedCharacter?.name || 'David'];
-
-    return [
-      {
-        id: ballIdRef.current++,
-        x: ball.x - 10,
-        y: ball.y,
-        vx: -Math.abs(ball.vx) * 1.1,
-        vy: -4,
-        size: newSize,
-        objectType: charData.objects[Math.floor(Math.random() * charData.objects.length)]
-      },
-      {
-        id: ballIdRef.current++,
-        x: ball.x + 10,
-        y: ball.y,
-        vx: Math.abs(ball.vx) * 1.1,
-        vy: -4,
-        size: newSize,
-        objectType: charData.objects[Math.floor(Math.random() * charData.objects.length)]
+    // Spawn next object after a short delay
+    setTimeout(() => {
+      if (ballsRef.current.length === 0) {
+        spawnObject();
       }
-    ];
-  }, [selectedCharacter]);
+    }, 500);
+
+    return 'continue';
+  }, [spawnObject]);
 
   // Game loop
   useEffect(() => {
@@ -590,8 +693,8 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         if (ball.y + radius > GROUND_Y) {
           ball.y = GROUND_Y - radius;
           ball.vy = -Math.abs(ball.vy) * BOUNCE_DAMPING;
-          // Ensure minimum bounce
-          if (Math.abs(ball.vy) < 5) ball.vy = -5 - ball.size.length;
+          // Ensure minimum bounce but keep it gentle
+          if (Math.abs(ball.vy) < 3) ball.vy = -3;
         }
 
         // Bounce off ceiling
@@ -609,9 +712,23 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
           if (distance < radius + 5) {
             ballsToRemove.push(ball.id);
             harpoonsRef.current.splice(hIndex, 1);
-            newBalls.push(...splitBall(ball));
-            setScore(prev => prev + BALL_SIZES[ball.size].points);
+            setScore(prev => prev + BALL_SIZES[ball.size].points * 2);  // More points since no splitting
             playSound('pop');
+
+            // Handle destruction and check level completion
+            const result = handleObjectDestroyed();
+            if (result === 'level_complete') {
+              playSound('levelup');
+              setLevel(prev => {
+                const newLevel = prev + 1;
+                if (newLevel > 5) {
+                  setGamePhase('win');
+                  return prev;
+                }
+                setTimeout(() => initLevel(newLevel), 1000);
+                return newLevel;
+              });
+            }
           }
         });
 
@@ -644,23 +761,8 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         drawObject(ctx, ball);
       });
 
-      // Remove hit balls and add split ones
+      // Remove hit balls
       ballsRef.current = ballsRef.current.filter(b => !ballsToRemove.includes(b.id));
-      ballsRef.current.push(...newBalls);
-
-      // Check win condition
-      if (ballsRef.current.length === 0) {
-        playSound('levelup');
-        setLevel(prev => {
-          const newLevel = prev + 1;
-          if (newLevel > 5) {
-            setGamePhase('win');
-            return prev;
-          }
-          setTimeout(() => initLevel(newLevel), 1000);
-          return newLevel;
-        });
-      }
 
       // Draw player (simple representation using character colors)
       const playerY = GROUND_Y - PLAYER_HEIGHT;
