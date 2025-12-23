@@ -1,0 +1,7 @@
+{
+  "name": "Eixos Creativa: Retro Xmas Adventure",
+  "description": "A retro 8-bit Amstrad-style Christmas greeting animation for Eixos Creativa staff and clients.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
