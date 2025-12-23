@@ -1190,42 +1190,41 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
   // Character selection screen
   if (gamePhase === 'select') {
     return (
-      <div className="flex flex-col items-center gap-4 py-4">
-        <h2 className="text-2xl text-yellow-400 font-bold border-b-4 border-yellow-400 pb-2 uppercase tracking-widest">
+      <div className="flex flex-col items-center gap-2 py-2 h-full max-h-[100dvh] overflow-auto">
+        <h2 className="text-lg sm:text-2xl text-yellow-400 font-bold border-b-4 border-yellow-400 pb-2 uppercase tracking-widest">
           SELECCIONA PERSONATGE
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full p-4 bg-white/5 border-2 border-white/10">
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4 w-full p-2 sm:p-4 bg-white/5 border-2 border-white/10 overflow-auto">
           {staff.map((member, i) => (
             <button
               key={i}
               onClick={() => startGame(member)}
-              className="flex flex-col items-center p-4 hover:bg-yellow-400/20 transition-all cursor-pointer border-2 border-transparent hover:border-yellow-400 bg-black/30"
+              className="flex flex-col items-center p-2 sm:p-4 hover:bg-yellow-400/20 transition-all cursor-pointer border-2 border-transparent hover:border-yellow-400 bg-black/30"
             >
-              <PixelSprite config={member} size={80} direction="front" pose="standing" />
-              <span className="text-sm text-yellow-400 mt-2 font-mono uppercase font-bold">{member.name}</span>
-              <span className="text-[10px] text-white/60">{CHARACTER_DATA[member.name]?.description}</span>
+              <PixelSprite config={member} size={isMobile ? 50 : 80} direction="front" pose="standing" />
+              <span className="text-xs sm:text-sm text-yellow-400 mt-1 font-mono uppercase font-bold">{member.name}</span>
+              <span className="text-[8px] sm:text-[10px] text-white/60 text-center">{CHARACTER_DATA[member.name]?.description}</span>
             </button>
           ))}
         </div>
 
-        <div className="text-center text-white/70 text-xs mt-2">
-          <p>🎮 Controls: ← → moure | ESPAI disparar</p>
-          <p>📱 Tàctil: Botons a pantalla</p>
+        <div className="text-center text-white/70 text-[10px] sm:text-xs mt-1">
+          <p>🎮 ← → moure | ESPAI disparar</p>
         </div>
 
         <button
           onClick={() => setMusicEnabled(!musicEnabled)}
-          className={`mt-2 px-4 py-2 text-sm font-bold border-2 transition-all ${
+          className={`px-3 py-1 text-xs sm:text-sm font-bold border-2 transition-all ${
             musicEnabled
               ? 'bg-green-600 text-white border-green-400'
               : 'bg-gray-800 text-yellow-400 border-yellow-400/50'
           }`}
         >
-          {musicEnabled ? '🎵 MÚSICA ON' : '🔇 MÚSICA OFF'}
+          {musicEnabled ? '🎵 ON' : '🔇 OFF'}
         </button>
 
-        <p className="text-yellow-400/60 text-sm mt-2">Rècord: {highScore} punts</p>
+        <p className="text-yellow-400/60 text-xs mt-1">Rècord: {highScore}</p>
 
         <button
           onClick={onBack}

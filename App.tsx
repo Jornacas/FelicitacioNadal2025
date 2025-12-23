@@ -488,6 +488,15 @@ const App: React.FC = () => {
     );
   }
 
+  // Mobile MINIGAME: fullscreen without RetroInterface
+  if (isMobile && gameState === GameState.MINIGAME) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-b from-[#0a0a2e] via-[#000030] to-[#001050] flex flex-col overflow-auto">
+        <PangGame staff={staff} onBack={() => setGameState(GameState.MENU)} />
+      </div>
+    );
+  }
+
   return (
     <RetroInterface title="THE XMAS ADVENTURE">
       {gameState === GameState.MENU && (
@@ -642,7 +651,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {gameState === GameState.MINIGAME && (
+      {gameState === GameState.MINIGAME && !isMobile && (
         <PangGame staff={staff} onBack={() => setGameState(GameState.MENU)} />
       )}
 
