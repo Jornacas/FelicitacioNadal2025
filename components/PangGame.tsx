@@ -163,6 +163,11 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         audioContextRef.current = new AudioContext();
       }
       const ctx = audioContextRef.current;
+
+      // Resume context if suspended (required for mobile)
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -1093,7 +1098,7 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
 
       // Update player sprite position (use percentage for responsive scaling)
       if (playerSpriteRef.current) {
-        const xPercent = ((playerXRef.current - 30) / CANVAS_WIDTH) * 100;
+        const xPercent = ((playerXRef.current - 20) / CANVAS_WIDTH) * 100;
         playerSpriteRef.current.style.left = `${xPercent}%`;
       }
 
@@ -1301,13 +1306,13 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
             ref={playerSpriteRef}
             className="absolute pointer-events-none"
             style={{
-              bottom: `${((CANVAS_HEIGHT - GROUND_Y - 8) / CANVAS_HEIGHT) * 100}%`,
-              left: `${((CANVAS_WIDTH / 2 - 30) / CANVAS_WIDTH) * 100}%`,
+              bottom: `${((CANVAS_HEIGHT - GROUND_Y - 5) / CANVAS_HEIGHT) * 100}%`,
+              left: `${((CANVAS_WIDTH / 2 - 20) / CANVAS_WIDTH) * 100}%`,
             }}
           >
             <PixelSprite
               config={selectedCharacter}
-              size={60}
+              size={40}
               direction="back"
               pose={isMoving ? 'walking' : 'standing'}
               showLabel={false}
@@ -1316,32 +1321,29 @@ const PangGame: React.FC<PangGameProps> = ({ staff, onBack }) => {
         )}
       </div>
 
-      {/* Touch controls */}
-      <div className="flex justify-between w-full max-w-[850px] mt-2 px-2 sm:hidden">
+      {/* Touch controls - mobile only */}
+      <div className="flex justify-between w-full max-w-[850px] mt-2 px-4 sm:hidden select-none" style={{ touchAction: 'manipulation' }}>
         <button
-          onTouchStart={() => handleTouchStart('left')}
-          onTouchEnd={() => handleTouchEnd('left')}
-          onMouseDown={() => handleTouchStart('left')}
-          onMouseUp={() => handleTouchEnd('left')}
-          className="bg-yellow-400/80 text-black w-16 h-16 text-2xl font-bold rounded-lg active:bg-yellow-300"
+          onTouchStart={(e) => { e.preventDefault(); handleTouchStart('left'); }}
+          onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('left'); }}
+          className="bg-yellow-400 text-black w-20 h-20 text-3xl font-bold rounded-xl active:bg-yellow-300 shadow-lg select-none"
+          style={{ touchAction: 'manipulation' }}
         >
           ◀
         </button>
         <button
-          onTouchStart={() => handleTouchStart('shoot')}
-          onTouchEnd={() => handleTouchEnd('shoot')}
-          onMouseDown={() => handleTouchStart('shoot')}
-          onMouseUp={() => handleTouchEnd('shoot')}
-          className="bg-red-500/80 text-white w-20 h-16 text-lg font-bold rounded-lg active:bg-red-400"
+          onTouchStart={(e) => { e.preventDefault(); handleTouchStart('shoot'); }}
+          onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('shoot'); }}
+          className="bg-red-500 text-white w-24 h-20 text-xl font-bold rounded-xl active:bg-red-400 shadow-lg select-none"
+          style={{ touchAction: 'manipulation' }}
         >
           🎯 TIR
         </button>
         <button
-          onTouchStart={() => handleTouchStart('right')}
-          onTouchEnd={() => handleTouchEnd('right')}
-          onMouseDown={() => handleTouchStart('right')}
-          onMouseUp={() => handleTouchEnd('right')}
-          className="bg-yellow-400/80 text-black w-16 h-16 text-2xl font-bold rounded-lg active:bg-yellow-300"
+          onTouchStart={(e) => { e.preventDefault(); handleTouchStart('right'); }}
+          onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('right'); }}
+          className="bg-yellow-400 text-black w-20 h-20 text-3xl font-bold rounded-xl active:bg-yellow-300 shadow-lg select-none"
+          style={{ touchAction: 'manipulation' }}
         >
           ▶
         </button>

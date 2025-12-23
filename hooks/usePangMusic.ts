@@ -76,6 +76,11 @@ export const usePangMusic = (isPlaying: boolean) => {
     audioContextRef.current = new AudioContext();
     isPlayingRef.current = true;
 
+    // Resume context if suspended (required for mobile)
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+
     const playNote = (
       ctx: AudioContext,
       frequency: number,
