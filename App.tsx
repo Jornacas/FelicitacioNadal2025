@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import RetroInterface from './components/RetroInterface';
 import PixelSprite from './components/PixelSprite';
 import GameCanvas from './components/GameCanvas';
+import PangGame from './components/PangGame';
 import { SpriteConfig, GameState } from './types';
 import { useChristmasMusic } from './hooks/useChristmasMusic';
 
@@ -510,10 +511,10 @@ const App: React.FC = () => {
               INICIAR HISTÒRIA
             </button>
             <button
-              onClick={() => setGameState(GameState.ADMIN)}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 sm:px-8 py-3 sm:py-5 border-b-4 sm:border-b-8 border-blue-950 active:border-b-0 active:translate-y-2 transition-all text-base sm:text-xl font-bold opacity-80 uppercase tracking-widest"
+              onClick={() => setGameState(GameState.MINIGAME)}
+              className="bg-purple-600 hover:bg-purple-500 text-white px-6 sm:px-8 py-3 sm:py-5 border-b-4 sm:border-b-8 border-purple-950 active:border-b-0 active:translate-y-2 transition-all text-base sm:text-xl font-bold uppercase tracking-widest"
             >
-              STAFF
+              🎮 MINIJOC
             </button>
           </div>
         </div>
@@ -641,23 +642,8 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {gameState === GameState.ADMIN && (
-        <div className="flex flex-col items-center gap-6 py-6">
-          <h2 className="text-2xl text-yellow-400 font-bold border-b-4 border-yellow-400 pb-2 uppercase tracking-widest">L'Equip</h2>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 w-full p-8 bg-white/5 border-2 border-white/10">
-            {staff.map((s, i) => (
-              <div key={i} className="flex flex-col items-center p-4 hover:bg-white/10 transition-all cursor-help border-2 border-transparent hover:border-yellow-400/50 shadow-inner">
-                <PixelSprite config={s} size={100} />
-                <span className="text-[10px] text-yellow-400 mt-3 font-mono uppercase font-bold text-center">{s.name}<br/><span className="opacity-50 text-[8px]">{s.role}</span></span>
-              </div>
-            ))}
-          </div>
-
-          <button onClick={() => setGameState(GameState.MENU)} className="mt-4 text-yellow-400 hover:text-white transition-colors uppercase text-sm border-2 border-yellow-400/30 px-6 py-2">
-            TORNAR AL MENÚ
-          </button>
-        </div>
+      {gameState === GameState.MINIGAME && (
+        <PangGame staff={staff} onBack={() => setGameState(GameState.MENU)} />
       )}
 
       <style>{`

@@ -20,7 +20,7 @@ export enum GameState {
   LOADING = 'LOADING',
   MENU = 'MENU',
   GAME = 'GAME',
-  ADMIN = 'ADMIN'
+  MINIGAME = 'MINIGAME'
 }
 
 export const AMSTRAD_PALETTE = {
